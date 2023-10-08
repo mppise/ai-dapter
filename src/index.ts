@@ -102,7 +102,7 @@ class AIDapter {
                     apiResults.push(response);
                     if (apiResults.length == payload.api_endpoints.length)
                       inprogress = false;
-                  }).catch((err) => {
+                  }).catch((err: any) => {
                     this.utils.log("E", api_endpoint.api.url, err);
                     reject({
                       "api_results": err,
@@ -154,7 +154,7 @@ class AIDapter {
             else
               timeout--;
           }, 500);
-        }).catch((err) => {
+        }).catch((err: any) => {
           this.utils.log("E", "Getting realtime sources failed", err);
           reject({
             "api_results": err,
@@ -280,7 +280,7 @@ class AIDapter {
               }
             });
           }
-        }).catch((err) => {
+        }).catch((err: any) => {
           this.utils.log("E", "Getting realtime data failed", err);
           reject(err);
         });
