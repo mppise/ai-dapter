@@ -68,21 +68,27 @@ class AIDapter {
   getDataFromRealtimeSource(input: string, apiRepository: Array<Types.APIRepository>, dataConfig?: Types.DataConfig) {
     return new Promise((resolve, reject) => {
       let inprogress = true;
-      let updatedInput = "";
+      let addContext: Array<any> = [];
+      let entities: Array<any> = [];
+      let question: Array<any> = [];
       if (dataConfig?.additional_context) {
-        updatedInput = `\nAdditional context:\n`;
         let maxContext = (dataConfig?.max_contexts && dataConfig?.max_contexts > 0) ? (dataConfig?.max_contexts > 2 ? 2 : dataConfig?.max_contexts) : 2;
         dataConfig?.additional_context.splice(0, dataConfig?.additional_context.length - maxContext); // Limit context results
         dataConfig?.additional_context.forEach((context: any) => {
           if (Object.keys(context).length > 0) {
-            updatedInput +=
-              (context.question ? context.question + `.\n` : ``) +
-              (context.summary ? context.summary + `.\n` : ``) +
-              (context.entities ? JSON.stringify(context.entities) + `.\n` : ``)
+            if (context.original_question)
+              question.push(context.original_question);
+            if (context.response_summary)
+              addContext.push(context.response_summary);
+            if (context.entities)
+              entities.push(context.entities);
           }
         });
       }
-      updatedInput += `\nQuestion:\n` + input;
+      question.push(input);
+      let updatedInput = (addContext.length ? `\nAdditional context:\n` + addContext.join(". ") : ``) + `\n` + JSON.stringify(entities);
+      updatedInput += `\nQuestion:\n` + question.join(". ");
+      this.utils.log("I", "Input for obtaining realtime sources:\n---" + updatedInput + "\n---\n");
       this.getRealtimeSources(updatedInput, apiRepository)
         .then((payload: any) => {
           let apiResults: any = [];

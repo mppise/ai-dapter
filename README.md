@@ -118,7 +118,7 @@ Below are currently supported data configuration parameters. Add these fields un
 |**Parameter**|**Mandatory(M) / Optional(O)**|**Purpose**|**Possible values**|
 |----------|:----------:|----------|----------|
 |`max_records`|M|Controls how many top records from a result-set obtained from realtime API call should be retailed. This parameter is essential to control the input token size as results from the API call are used in grounding. **Note**: Because only top X rows are retained, it is best idea to provide API endpoints that would include data sorted in descending order. Default=10|Any number between 1 and 10|
-|`additional_context`|O|If, in addition to context obtained from API calls needs to be provided, such additional context can be provided here as a JSON object. This is specifically useful when providing follow-up-like capabiltiies (see more on this in examples below).|Must be an array of any type, e.g. ```["this is additional context", {"fruit_name": "apple", "red":true }, ...]```|
+|`additional_context`|O|If, in addition to context obtained from API calls needs to be provided, such additional context can be provided here as a JSON object. This is specifically useful when providing follow-up-like capabiltiies (see more on this in examples below).|Must be an array with the structure as follows: ```[{ "original_question": "", "response_summary": "", "entities": {} }, ...]```|
 |`max_contexts`|O|Retains latest X contexts. AI-Dapter will retain last 2 elements of the `additional_context` array assuming latest context is always appended at the end of this array.|1 or 2|
 
 

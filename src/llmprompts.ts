@@ -101,8 +101,8 @@ class LLMPrompts {
       "response": "Provide your response  using basic markdown formatting elements as follows: (1) If you have all the information to respond to the question completely, please do so within " + (agent.max_words ? (agent.max_words > 200 ? 200 : agent.max_words) : 200) + " words. Create appropriate sections, titles, tables, etc. (2) If you find any information is missing, please provide clear guidance on what you would need to provide a more complete response.",
       "status": "Say 'OK' if there was no missing information in the input, else say 'FOLLOW-UP'",
       "additional_context": {
-        "original_question": "\"" + input + "\"",
-        "response_summary": "Summarize your response in less than 20 words in plain text.",
+        "original_question": input,
+        "response_summary": "Summarize the context of this conversation in less than 50 words. Include who and what is this conversation about.",
         "entities": {
           "Entity Type from the conversation": ["Array of Corresponding Entity Values"]
         }
