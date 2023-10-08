@@ -26,7 +26,18 @@
     "few-shot",
     "grounding"
   ],
-  "author": "Mangesh Pise <mppise@gmail.com>",
+  "author": {
+    "name": "Mangesh Pise",
+    "email": "mppise@gmail.com",
+    "url": "https://mangeshpise.com/"
+  },
+  "contributors": [
+    {
+      "name": "Mangesh Pise",
+      "email": "mppise@gmail.com",
+      "url": "https://mangeshpise.com/"
+    }
+  ],
   "license": "BSD 2-Clause",
   "repository": {
     "type": "git",
