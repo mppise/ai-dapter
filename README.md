@@ -118,7 +118,7 @@ Below are currently supported data configuration parameters. Add these fields un
 |**Parameter**|**Mandatory(M) / Optional(O)**|**Purpose**|**Possible values**|
 |----------|:----------:|----------|----------|
 |`max_records`|M|Controls how many top records from a result-set obtained from realtime API call should be retailed. This parameter is essential to control the input token size as results from the API call are used in grounding. **Note**: Because only top X rows are retained, it is best idea to provide API endpoints that would include data sorted in descending order. Default=10|Any number between 1 and 10|
-|`additional_context`|O|If, in addition to context obtained from API calls needs to be provided, such additional context can be provided here as a JSON object. This is specifically useful when providing follow-up-like capabiltiies (see more on this in examples below).|Must be an array with the structure as follows: ```[{ "original_question": "", "response_summary": "", "entities": {} }, ...]```|
+|`additional_context`|O|Additional context can be provided when follow-up-like capabiltiies are expected. (see examples from 6.3. Generation of LLM response with grounding realtime data).|Must be an array with the structure as follows: ```[{ "original_question": "", "response_summary": "", "entities": { ... } }, { ... }]```|
 |`max_contexts`|O|Retains latest X contexts. AI-Dapter will retain last 2 elements of the `additional_context` array assuming latest context is always appended at the end of this array.|1 or 2|
 
 
@@ -374,7 +374,7 @@ Use this method if your objective is to obtain LLM response based on user questi
 |----------|----------|
 |`ai_response`|LLM generated response in markdown formatting.|
 |`ai_status`|Helps determine if the response was based on availability of all required data elements to make successful API calls. Possible values: OK, FOLLOW-UP, or INCOMPLETE|
-|`ai_context`|This contains short response summary and list of entities. The idea behind this field is that for use cases involing follow-up conversations, this entire object can be passed as `additional_content` within the `dataConfig` options.|
+|`ai_context`|This contains short response summary and list of entities. The idea behind this field is for use cases involing follow-up conversations. The entire object can be passed as `additional_content` within the `dataConfig` options when follow-up questions are to be submitted.|
 |`tokens`|To track LLM tokens used.|
 
 #### Example
@@ -469,38 +469,51 @@ ai.getLLMResponseFromRealtimeSources(question, apiRepository, options)
 
 Notice that the user question is used to first identify relevant API's from the provided API repository. This method also calls the identified API's and collects their responses to ground the final LLM prompt and returns the generated response back.
 
-Also take note that the response not only contains the LLM generated content (`ai_response`), but also structured context (`ai_context`) which can be passed as `additional_context` into the `dataConfig` object for follow-up questions. Ideally, this is useful when follow-up questions needs to be answered and a prior context is essential to generate a meaningful response.
+#### Additional Context for follow-ups:
+
+Also take note that the response not only contains the LLM generated content within `ai_response` field, but also contains context within `ai_context` field. The entire context can be passed as `dataConfig.additional_context` along with follow-up questions.
 
 Here is an example showing how the context can be passed to enable follow-up conversation.
 
 ```js
-// Update dataConfig object with additional_context ...
-options.dataConfig.additional_context = [
-  {
-    "original_question": "\"what time is it in Mumbai?\"",
-    "response_summary": "The current time in Mumbai is 08:55 AM on October 8, 2023.",
-    "entities": {
-      "Location": ["Mumbai"]
-    }
-  }
-];
+
+// As shown in the previous example, ai_context contains following information:
+// -----------------------------------------------------------------------------
+//  resp.ai_context = {
+//   "original_question": "what time is it in Mumbai?",
+//   "response_summary": "The current time in Mumbai is 08:55 AM on October 8, 2023.",
+//   "entities": {
+//      "Location": ["Mumbai"]
+//    }
+//   }
+// -----------------------------------------------------------------------------
+
+
+// Append the above context into dataConfig.additional_context ...
+if(options.dataConfig[additional_context]){
+  options.dataConfig[additional_context].push(resp.ai_context);
+}
+else{
+  options.dataConfig[additional_context] = [];
+  options.dataConfig[additional_context].push(resp.ai_context);
+}
 
 // This is user's follow-up question
 let input = "which timezone is it in?"
 
-// ... and call the getLLMResponseFromRealtimeSources() method again.
-// This enables LLM to take the additional context into account and generate a follow-up response.
+// Call the getLLMResponseFromRealtimeSources() method again, 
+// only this time 'options' contains additional context to help LLM generate a follow-up response.
 ai.getLLMResponseFromRealtimeSources(question, apiRepository, options)
   .then((resp) => {
     console.log(resp);
     /*
     {
       "ai_response": "The current timezone is Asia/Kolkata.",
-        "ai_status": "OK",
-          "ai_context": {
-        "original_question": "\"which timezone is it in?\"",
-          "response_summary": "The current timezone is Asia/Kolkata.",
-            "entities": { }
+      "ai_status": "OK",
+      "ai_context": {
+        "original_question": "which timezone is it in?",
+        "response_summary": "The current timezone is Asia/Kolkata.",
+        "entities": { }
       },
       "tokens": {
         "api_identification": {
