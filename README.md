@@ -1,4 +1,4 @@
-![AI-Dapter](./AI-Dapter_Logo.png)
+![AI-Dapter](./res/AI-Dapter_Logo_528x132.png)
 
 # AI-Dapter
 
