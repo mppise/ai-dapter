@@ -87,7 +87,7 @@ class AIDapter {
       }
       question.push(input);
       let updatedInput = (addContext.length ? `\nAdditional context:\n` + addContext.join(". ") : ``) + `\n` + JSON.stringify(entities);
-      updatedInput += `\nQuestion:\n` + question.join(". ");
+      updatedInput += `\nQuestion: ` + question.join(". ");
       this.utils.log("I", "Input for obtaining realtime sources:\n---" + updatedInput + "\n---\n");
       this.getRealtimeSources(updatedInput, apiRepository)
         .then((payload: any) => {
@@ -206,7 +206,7 @@ class AIDapter {
                 :
                 {
                   "response": resp.data.choices[0].message.content,
-                  "status": "INCOMPLETE",
+                  "status": "OK",
                   "additional_context": {
                     "conversation": {
                       "original_question": input,
@@ -232,12 +232,15 @@ class AIDapter {
             else {
               this.utils.log("W", "Response NOT OK");
               let possibleResponses = [
-                "Sorry! Looks like we failed to receive a response back. Do you mind trying again?",
-                "Oh! Sorry, but we did not receive a proper response for you. Would you like to try again?"
+                "I'm sorry, but the data I obtained seems to be invalid. Can you please double-check and rephrase your question?",
+                "Unfortunately, it appears that the information I looked up isn't insufficient. Could you correct it or provide more details?",
+                "The data obtained doesn't seem to be reliable. Can you rephrase your question with additional information?",
+                "It looks like the I obtained to answer your query is incorrect. Could you please provide more information or clarify your question?",
+                "I'm having trouble with the data I received. Can you check and provide additional information and rephrase your question for better results?"
               ]
               resolve({
                 "ai_response": possibleResponses[Math.floor(Math.random() * possibleResponses.length)],
-                "ai_status": "INCOMPLETE",
+                "ai_status": "BAD-DATA",
                 "ai_context": {
                   "conversation": {
                     "original_question": input,
@@ -259,12 +262,15 @@ class AIDapter {
           else {
             this.utils.log("W", "No APIs were identified");
             let possibleResponses = [
-              "Sorry! We could not find a realtime source from where this information could be obtained. Would you mind rephrasing your question and trying again?",
-              "Oh! Unfortunately we did not find a realtime source that can help answer that question. Could you please rephrase and ask again?"
+              "I'm sorry, but I couldn't find any information on that topic. Would you mind rephrasing your question and trying again?",
+              "Unfortunately, I couldn't locate any sources relevant to your query. Could you please rephrase and ask again?",
+              "I searched, but couldn't find any available sources for your question. Can you rephrase it to help me assist you better?",
+              "It appears there are no sources available to answer your question. Could you rephrase it so I can try again?",
+              "I couldn't locate a source to provide the information you're looking for. Could you please rephrase your question for better results?"
             ]
             resolve({
               "ai_response": possibleResponses[Math.floor(Math.random() * possibleResponses.length)],
-              "ai_status": "INCOMPLETE",
+              "ai_status": "NO-SOURCE",
               "ai_context": {
                 "conversation": {
                   "original_question": input,

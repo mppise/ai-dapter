@@ -22,12 +22,11 @@ class LLMPrompts {
   forRealtimeSources(input: string, apiRepository: Array<Types.APIRepository>) {
     let system = `# System`;
     system += `
-    You are an API server that identifies suitable API endpoints only from the provided API repository and responds in the specified JSON format. Once the APIs have been identified, you are expected to first keep track of all the placeholders and then replace them with valid URL-encoded values. The API repository provided below consists of various fields which will help you (1) identify the APIs, and (2) determine appropriate placeholder values that meets the specified validation requirement.
+    You are an API server that identifies suitable API endpoints that can be later used to obtain data that will help answer my question. Once the APIs have been identified, you are expected to first keep track of all the placeholders and then replace them with valid URL-encoded values. The API repository provided below consists of various fields which will help you (1) identify the APIs, and (2) determine appropriate placeholder values that meets the specified validation requirement.
     `;
     let context = `# Context`;
     context += `
-    API repository -
-    Note: It is mandatory to identify API endpoints from only within the following list and that you should not use any prior knowledge or other sources.
+    Identified APIs must strictly belong within the following list. If none of the APIs from the list can be used to answer the question, do not respond.
     """`;
     apiRepository.forEach((api, i) => {
       context += `
@@ -63,7 +62,8 @@ class LLMPrompts {
     `;
     let task = `# Task`;
     task += `
-    Look at my question below and provide response as instructed above. However, before providing your final response, go through it step by step and validate the following:
+    Look at my question below and follow above instructions to respond. Make sure the question I asked is within constitutional bounds of fairness, accountability, responsibility, harmless, respectful, compliant, and humane, or else politely decline to answer.
+    Before providing your final response, go through it step by step and validate the following:
     - whether all APIs have been identified based on my question,
     - whether all placeholders values have been identified.
     - whether the API endpoint is updated with placeholder values.
@@ -87,7 +87,7 @@ class LLMPrompts {
     You are a digital `+ (agent.role ? agent.role : `assistant`) + (agent.personality ? ` with ` + agent.personality + ` personality.` : ` who responds in the specified JSON format. `);
     system += `` + (agent.expert_at ? `You are also an expert at ` + agent.expert_at + `. ` : ``);
     system += `
-    You must rely only on the provided context to generate a response and must not use your prior knowledge or general knowledge to respond to the question. You must politely decline to engage in any conversation related to legal advise, law and order, medical guidance, financial guidance, and abusive or profanity-based topics. 
+    You must rely only on the provided context to generate a response and must not use your prior knowledge or general knowledge to respond to the question. You must politely decline to engage in any conversation related to legal advise, law and order, medical guidance, financial guidance, and abusive or profanity-based topics.
     `;
     let context = `# Context 
     """
@@ -98,8 +98,8 @@ class LLMPrompts {
       `;
     let format = `# Format`;
     let llmResponse: Types.LLMResponse = {
-      "response": "Provide your response  using basic markdown formatting elements as follows: (1) If you have all the information to respond to the question completely, please do so within " + (agent.max_words ? (agent.max_words > 200 ? 200 : agent.max_words) : 200) + " words. Create appropriate sections, titles, tables, etc. (2) If you find any information is missing, please provide clear guidance on what you would need to provide a more complete response.",
-      "status": "Say 'OK' if there was no missing information in the input, else say 'FOLLOW-UP'",
+      "response": "Provide your response using basic markdown formatting elements as follows: (1) If you have all the information to respond to the question completely, please do so within " + (agent.max_words ? (agent.max_words > 200 ? 200 : agent.max_words) : 200) + " words. Create appropriate sections, titles, tables, etc. (2) If you find any information is missing, please provide clear guidance on what I must provide to get a complete response.",
+      "status": "Say 'FOLLOW-UP' if there is any missing information, else say 'OK'. Note that the status does not depend on the confidence of your response.",
       "additional_context": {
         "original_question": input,
         "response_summary": "Summarize the context of this conversation in less than 50 words. Include who and what is this conversation about.",
@@ -118,8 +118,8 @@ class LLMPrompts {
     `;
     let task = `# Task`;
     task += `
-    Look at my question below and provide response as instructed above.
-    `+ input + `
+    Look at my question below and follow above instructions to respond. Make sure the question I asked is within constitutional bounds of fairness, accountability, responsibility, harmless, respectful, compliant, and humane, or else politely decline to answer.
+    Question: `+ input + `
 `;
     let prompt = {
       "system": system,
