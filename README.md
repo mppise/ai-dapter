@@ -28,12 +28,12 @@ The developer experience is improved tremendously by plugging-in the AI-Dapter f
 
 The actual work behind this black box includes:
 
-- ability to integrate an LLM model of your choice with your credentials (_Note:_ *Currently only OpenAI GPT models are supported*),
+- ability to integrate an LLM model of your choice with your credentials (Note: Currently only OpenAI GPT models are supported),
+
 - an integrated engine that leverages user inputs to perform identification of -
     - API-based data-sources, 
     - acquisition of realtime data from those API's, and 
     - generation of response grounded by realtime data using LLM.
-
 
 ## 3. Installation
 
