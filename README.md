@@ -641,3 +641,10 @@ During his work with LLM's, he realized the general lack of a framework that all
 With the depth of experience in application development (full-stack) and prompt engineering (with LLM's), he had to come up with a concept that can accelerate the whole application development process for applications involving use of LLM's. He realized the skills are different for application developers from those for prompt engineering. 
 
 And so, AI-Dapter was conceptualized which can be used a black box by full-stack application developers without the need to spend time and effort on complex prompt engineering and orchestration process for obtaining realtime data.
+
+
+## 10. Demonstrations
+
+Watch the full demonstration with setup and examples on [YouTube](https://youtu.be/x2RuLgX3J9c).
+
+Check out the demo project on [GitHub](https://github.com/mppise/ai-dapter-demo) for a practical look at AI-Dapter in action. Just clone and update your OpenAI API keys and Org ID.
