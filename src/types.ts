@@ -70,9 +70,10 @@ module Types {
     "response": string,
     "status": string,
     "additional_context": {
+      "sources": Array<string>
       "original_question": string,
       "response_summary": string,
-      "entities": any
+      "entities": Array<any>
     }
   };
 

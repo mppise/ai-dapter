@@ -106,7 +106,7 @@ class AIDapter {
                         response[key].splice(maxRecords);  // Limit data results
                       }
                     });
-                    apiResults.push(response);
+                    apiResults.push({ "api_sources": api_endpoint.api.url.split('//')[1].split('/')[0], "data": response });
                     if (apiResults.length == payload.api_endpoints.length)
                       inprogress = false;
                   }).catch((err: any) => {
@@ -224,12 +224,13 @@ class AIDapter {
                   "response": resp.data.choices[0].message.content,
                   "status": "OK",
                   "additional_context": {
+                    "sources": [],
                     "conversation": {
                       "original_question": input,
                       "response_summary": resp.data.choices[0].message.content.substring(0, 25)
                     },
                     "additional_context": {},
-                    "entities": {}
+                    "entities": []
                   },
                 };
               resolve({
@@ -258,12 +259,13 @@ class AIDapter {
                 "ai_response": possibleResponses[Math.floor(Math.random() * possibleResponses.length)],
                 "ai_status": "BAD-DATA",
                 "ai_context": {
+                  "sources": [],
                   "conversation": {
                     "original_question": input,
                     "response_summary": possibleResponses[Math.floor(Math.random() * possibleResponses.length)]
                   },
                   "additional_context": {},
-                  "entities": {}
+                  "entities": []
                 },
                 "tokens": {
                   "api_identification": realtimeData.tokens,
@@ -288,12 +290,13 @@ class AIDapter {
               "ai_response": possibleResponses[Math.floor(Math.random() * possibleResponses.length)],
               "ai_status": "NO-SOURCE",
               "ai_context": {
+                "sources": [],
                 "conversation": {
                   "original_question": input,
                   "response_summary": possibleResponses[Math.floor(Math.random() * possibleResponses.length)]
                 },
                 "additional_context": {},
-                "entities": {}
+                "entities": []
               },
               "tokens": {
                 "api_identification": realtimeData.tokens,
