@@ -74,7 +74,7 @@ class AIDapter {
       if (dataConfig?.additional_context) {
         let maxContext = (dataConfig?.max_contexts && dataConfig?.max_contexts > 0) ? (dataConfig?.max_contexts > 2 ? 2 : dataConfig?.max_contexts) : 2;
         dataConfig?.additional_context.splice(0, dataConfig?.additional_context.length - maxContext); // Limit context results
-        dataConfig?.additional_context.forEach((context: any) => {
+        dataConfig?.additional_context.forEach((context: any, i) => {
           if (Object.keys(context).length > 0) {
             if (context.original_question)
               question.push(context.original_question);
@@ -83,12 +83,12 @@ class AIDapter {
             if (context.entities)
               entities.push(context.entities);
           }
+          this.utils.log("I", "Additional Context (" + (i + 1) + "):", context);
         });
       }
       question.push(input);
       let updatedInput = (addContext.length ? `\nAdditional context:\n` + addContext.join(". ") : ``) + `\n` + JSON.stringify(entities);
       updatedInput += `\nQuestion: ` + question.join(". ");
-      this.utils.log("I", "Input for obtaining realtime sources:\n---" + updatedInput + "\n---\n");
       this.getRealtimeSources(updatedInput, apiRepository)
         .then((payload: any) => {
           let apiResults: any = [];

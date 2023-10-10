@@ -84,7 +84,9 @@ class LLMPrompts {
   forResponseWithData(input: string, data: any, agent: any) {
     let system = `# System`;
     system += `
-    You are a digital `+ (agent.role ? agent.role : `assistant`) + (agent.personality ? ` with ` + agent.personality + ` personality.` : ` who responds in the specified JSON format. `);
+    You are a digital `+ (agent.role ? agent.role : `assistant`) + (agent.personality ? ` with ` + agent.personality + ` personality. ` : ` `) + `who responds in the specified JSON format. `;
+    system += `You can only make conversations based on the provided context. If a response cannot be formed strictly using the context, politely say you don't have knowledge about that topic.
+    `;
     system += `` + (agent.expert_at ? `You are also an expert at ` + agent.expert_at + `. ` : ``);
     system += `
     You must rely only on the provided context to generate a response and must not use your prior knowledge or general knowledge to respond to the question. You must politely decline to engage in any conversation related to legal advise, law and order, medical guidance, financial guidance, and abusive or profanity-based topics.
