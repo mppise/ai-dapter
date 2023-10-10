@@ -89,6 +89,7 @@ class AIDapter {
       question.push(input);
       let updatedInput = (addContext.length ? `\nAdditional context:\n` + addContext.join(". ") : ``) + `\n` + JSON.stringify(entities);
       updatedInput += `\nQuestion: ` + question.join(". ");
+      this.utils.log("I", "Question for API", question.join(". "));
       this.getRealtimeSources(updatedInput, apiRepository)
         .then((payload: any) => {
           let apiResults: any = [];
@@ -187,8 +188,23 @@ class AIDapter {
         .then(async (realtimeData: any) => {
           this.utils.log("I", "Got " + realtimeData.api_results.length + " results from API calls");
           if (realtimeData.api_results.length) {
+            let question: Array<any> = [];
+            if (options) {
+              if (options.dataConfig?.additional_context) {
+                let maxContext = (options.dataConfig?.max_contexts && options.dataConfig?.max_contexts > 0) ? (options.dataConfig?.max_contexts > 2 ? 2 : options.dataConfig?.max_contexts) : 2;
+                options.dataConfig?.additional_context.splice(0, options.dataConfig?.additional_context.length - maxContext); // Limit context results
+                options.dataConfig?.additional_context.forEach((context: any, i) => {
+                  if (Object.keys(context).length > 0) {
+                    if (context.original_question)
+                      question.push(context.original_question);
+                  }
+                });
+              }
+            }
+            question.push(input);
+            this.utils.log("I", "Question for LLM", question.join(". "));
             let llmPrompts = new LLMPrompts();
-            let prompt = llmPrompts.forResponseWithData(input, realtimeData.api_results, options?.agentConfig);
+            let prompt = llmPrompts.forResponseWithData(question.join(". "), realtimeData.api_results, options?.agentConfig);
             let resp: any = {};
             switch (this.llm.provider) {
               case "OpenAI":
