@@ -129,7 +129,7 @@ class LLMPrompts {
       "format": format,
       "task": task
     };
-    this.utils.log("I", "Prompt (for response)", system + context + format + task);
+    // this.utils.log("I", "Prompt (for response)", system + context + format + task);
     return prompt;
   };
 
