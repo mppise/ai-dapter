@@ -1,5 +1,5 @@
 import LLMPrompts from "./llmprompts";
-import Types from "./types";
+import { Types } from "./types";
 import Utils from "./utils";
 
 class AIDapter {
