@@ -1,4 +1,4 @@
-export module Types {
+module Types {
 
   type apiEndpoint = {
     "method": string,
@@ -87,4 +87,4 @@ export module Types {
 
 };
 
-// export = Types;
+export = Types;

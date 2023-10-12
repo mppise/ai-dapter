@@ -1,4 +1,4 @@
-import { Types } from "./types";
+import Types from "./types";
 import Utils from "./utils";
 
 class LLMPrompts {
