@@ -35,6 +35,15 @@ The actual work behind this black box includes:
     - acquisition of realtime data from those API's, and 
     - generation of response grounded by realtime data using LLM.
 
+### Discussions / Feature Requests:
+
+Please submit your feedback or new feature requests via [GitHub Discussions](https://github.com/mppise/ai-dapter/discussions).
+
+### Issues:
+
+Please submit your issues via [GitHub Issues](https://github.com/mppise/ai-dapter/issues).
+
+
 ## 3. Installation
 
 To install AI-Dapter for your NodeJS project, run the following on command-line. Make sure you are within your project's root directory.
