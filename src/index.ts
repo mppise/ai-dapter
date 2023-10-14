@@ -42,16 +42,18 @@ class AIDapter {
    */
   getRealtimeSources(input: string, apiRepository: Array<Types.APIRepository>) {
     return new Promise(async (resolve, reject) => {
+      this.utils.trackEvent(this.llm.app_name, 'question', { question: input }, this.llm.telemetry == true);
       let llmPrompts = new LLMPrompts();
       let prompt = llmPrompts.forRealtimeSources(input, apiRepository);
       let resp: any = {};
       switch (this.llm.provider) {
         case "OpenAI":
           resp = await this.utils.callOpenAI(this.llm, prompt);
+          this.utils.trackUsage(this.llm.app_name, 'openai_calls', 1, this.llm.telemetry == true);
           break;
-
-        default:
-          break;
+        // --
+        //  .. add more providers here ...
+        // -- 
       };
       let llmResponse = resp.data.choices[0].message.content;
       let payload = JSON.parse(llmResponse.substring(llmResponse.indexOf('{'), llmResponse.lastIndexOf('}') + 1)); // only select JSON object
@@ -59,6 +61,7 @@ class AIDapter {
         payload['api_endpoints'] = [];
       payload['tokens'] = resp.data.usage;
       this.utils.log("I", payload.api_endpoints.length + " APIs identified");
+      this.utils.trackUsage(this.llm.app_name, 'apis_identified', payload.api_endpoints.length, this.llm.telemetry == true);
       resolve(payload);
     });
   };
@@ -75,26 +78,36 @@ class AIDapter {
       let inprogress = true;
       let addContext: Array<any> = [];
       let entities: Array<any> = [];
-      let question: Array<any> = [];
+      let questions: Array<any> = [];
       if (dataConfig?.additional_context) {
         let maxContext = (dataConfig?.max_contexts && dataConfig?.max_contexts > 0) ? (dataConfig?.max_contexts > 2 ? 2 : dataConfig?.max_contexts) : 2;
         dataConfig?.additional_context.splice(0, dataConfig?.additional_context.length - maxContext); // Limit context results
         dataConfig?.additional_context.forEach((context: any, i) => {
           if (Object.keys(context).length > 0) {
             if (context.original_question)
-              question.push(context.original_question);
+              questions.push(context.original_question);
             if (context.response_summary)
               addContext.push(context.response_summary);
             if (context.entities)
               entities.push(context.entities);
           }
-          this.utils.log("I", "Additional Context (" + (i + 1) + "):", context);
         });
       }
-      question.push(input);
-      let updatedInput = (addContext.length ? `\nAdditional context:\n` + addContext.join(". ") : ``) + `\n` + JSON.stringify(entities);
-      updatedInput += `\nQuestion: ` + question.join(". ");
-      this.utils.log("I", "Question for API", question.join(". "));
+      questions.push(input);
+      let updatedInput = "";
+      if (addContext.length) {
+        updatedInput += `\nAdditional Context:\n`;
+        addContext.forEach((context: any) => {
+          updatedInput += ((context + `. `) || ``);
+        });
+      }
+      if (entities.length) {
+        updatedInput += `\nEntities:\n`;
+        entities.forEach((entity: any) => {
+          updatedInput += ((JSON.stringify(entity) + `\n`) || ``);
+        });
+      }
+      updatedInput += `\nQuestion:\n` + questions.join(". ");
       this.getRealtimeSources(updatedInput, apiRepository)
         .then((payload: any) => {
           let apiResults: any = [];
@@ -104,6 +117,7 @@ class AIDapter {
                 this.utils.callAPI(api_endpoint.api.method, api_endpoint.api.url, api_endpoint.api.headers, api_endpoint.api.data || false)
                   .then((resp: any) => {
                     this.utils.log("I", "[" + resp.status + "] " + api_endpoint.api.url);
+                    this.utils.trackUsage(this.llm.app_name, 'api_calls:' + resp.status, 1, this.llm.telemetry == true);
                     let maxRecords = (dataConfig?.max_records && dataConfig?.max_records > 0) ? (dataConfig?.max_records > 10 ? 10 : dataConfig?.max_records) : 10;
                     let response = resp.data;
                     Object.keys(response).forEach((key) => {
@@ -123,7 +137,8 @@ class AIDapter {
                   });
               }
               else {
-                this.utils.log("W", api_endpoint.api.url + " has missing placeholder values");
+                this.utils.trackUsage(this.llm.app_name, 'api_calls:skipped', 1, this.llm.telemetry == true);
+                this.utils.log("I", "[skipping] " + api_endpoint.api.url);
                 let placeholdersUndetermined: any = [];
                 if (api_endpoint['placeholders']) {
                   api_endpoint.placeholders.forEach((placeholder: any) => {
@@ -140,7 +155,6 @@ class AIDapter {
                   }
                 }
                 else {
-                  this.utils.log("W", api_endpoint.api.url + " has no placeholders");
                   apiResults.push('-');
                   if (apiResults.length == payload.api_endpoints.length)
                     inprogress = false;
@@ -191,7 +205,6 @@ class AIDapter {
     return new Promise((resolve, reject) => {
       this.getDataFromRealtimeSource(input, apiRepository, options?.dataConfig)
         .then(async (realtimeData: any) => {
-          this.utils.log("I", "Got " + realtimeData.api_results.length + " results from API calls");
           if (realtimeData.api_results.length) {
             let question: Array<any> = [];
             if (options) {
@@ -207,19 +220,18 @@ class AIDapter {
               }
             }
             question.push(input);
-            this.utils.log("I", "Question for LLM", question.join(". "));
             let llmPrompts = new LLMPrompts();
             let prompt = llmPrompts.forResponseWithData(question.join(". "), realtimeData.api_results, options?.agentConfig);
             let resp: any = {};
             switch (this.llm.provider) {
               case "OpenAI":
                 resp = await this.utils.callOpenAI(this.llm, prompt);
+                this.utils.trackUsage(this.llm.app_name, 'openai_calls', 1, this.llm.telemetry == true);
                 break;
-
-              default:
-                break;
+              // --
+              //  .. add more providers here ...
+              // -- 
             };
-            this.utils.log("I", "Generating response...");
             if (resp.status == 200) {
               this.utils.log("I", "Response OK");
               let payload = (resp.data.choices[0].message.content.indexOf('{') >= 0 && resp.data.choices[0].message.content.lastIndexOf('}') > 0) ?
@@ -238,6 +250,7 @@ class AIDapter {
                     "entities": []
                   },
                 };
+              this.utils.trackUsage(this.llm.app_name, 'llm_response:' + resp.status, 1, this.llm.telemetry == true);
               resolve({
                 "ai_response": payload.response,
                 "ai_status": payload.status,
@@ -252,7 +265,7 @@ class AIDapter {
               });
             }
             else {
-              this.utils.log("W", "Response BAD DATA");
+              this.utils.log("W", "No response - BAD DATA");
               let possibleResponses = [
                 "I'm sorry, but the data I obtained seems to be invalid. Can you please double-check and rephrase your question?",
                 "Unfortunately, it appears that the information I looked up isn't insufficient. Could you correct it or provide more details?",
@@ -260,6 +273,7 @@ class AIDapter {
                 "It looks like the I obtained to answer your query is incorrect. Could you please provide more information or clarify your question?",
                 "I'm having trouble with the data I received. Can you check and provide additional information and rephrase your question for better results?"
               ];
+              this.utils.trackUsage(this.llm.app_name, 'llm_response:' + resp.status, 1, this.llm.telemetry == true);
               resolve({
                 "ai_response": possibleResponses[Math.floor(Math.random() * possibleResponses.length)],
                 "ai_status": "BAD-DATA",
@@ -283,7 +297,7 @@ class AIDapter {
             }
           }
           else {
-            this.utils.log("W", "No APIs were identified");
+            this.utils.log("W", "No APIs identified");
             let possibleResponses = [
               "I'm sorry, but I couldn't find any information on that topic. Would you mind rephrasing your question and trying again?",
               "Unfortunately, I couldn't locate any sources relevant to your query. Could you please rephrase and ask again?",
@@ -291,6 +305,7 @@ class AIDapter {
               "It appears there are no sources available to answer your question. Could you rephrase it so I can try again?",
               "I couldn't locate a source to provide the information you're looking for. Could you please rephrase your question for better results?"
             ];
+            this.utils.trackUsage(this.llm.app_name, 'llm_response:skipped', 1, this.llm.telemetry == true);
             resolve({
               "ai_response": possibleResponses[Math.floor(Math.random() * possibleResponses.length)],
               "ai_status": "NO-SOURCE",

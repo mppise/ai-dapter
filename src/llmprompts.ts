@@ -100,13 +100,13 @@ class LLMPrompts {
       `;
     let format = `# Format`;
     let llmResponse: Types.LLMResponse = {
-      "response": "Provide your response using basic markdown formatting elements as follows: (1) If you have all the information to respond to the question completely, please do so within " + (agent.max_words ? (agent.max_words > 200 ? 200 : agent.max_words) : 200) + " words. Create appropriate sections, titles, tables, etc. (2) If you find any information is missing, please provide clear guidance on what I must provide to get a complete response.",
+      "response": "Provide your response in first-person as follows using basic markdown formatting elements with appropriate sections, titles, lists, etc.: (1) If you have all the information to respond to the question completely, please do so within " + (agent.max_words ? (agent.max_words > 200 ? 200 : agent.max_words) : 200) + " words, or (2) If you find any information is missing, please provide clear guidance on what I must provide to get a complete response.",
       "status": "Say 'FOLLOW-UP' if there is any missing information, else say 'OK'. Note that the status does not depend on the confidence of your response.",
       "additional_context": {
-        "sources": ["Array of API sources found in the context"],
+        "entities": [{ "Entity Type 1": ["Array of Entity Values"] }, { "Entity Type 2": ["Array of Entity Values"] }],
+        "sources": ["Array of API sources found in the context or an empty array"],
         "original_question": input,
-        "response_summary": "Summarize the context of this conversation in less than 50 words. Include who and what is this conversation about.",
-        "entities": [{ "Entity Type 1": ["Entity Values"] }, { "Entity Type 2": ["Entity Values"] }]
+        "response_summary": "What is this conversation about? Who is it about? Write in third-person in less than 100 words.",
       }
     }
     format += `
@@ -120,6 +120,13 @@ class LLMPrompts {
     let task = `# Task`;
     task += `
     Look at my question below and follow above instructions to respond. Make sure the question I asked is within constitutional bounds of fairness, accountability, responsibility, harmless, respectful, compliant, and humane, or else politely decline to answer.
+    Before providing your final response, go through it step by step and validate the following:
+    - whether the question was answered completely based on available information.
+    - if information was missing, it is included in the response posed as a follow-up question.
+    - whether the status is updated appropriately.
+    - whether all key Entity Types and Entity Values are identified from this conversation and listed as key-value pairs.
+    - whether sources have been identified and listed.
+    - whether response_summary contains enough information about the context of this conversation.
     Question: `+ input + `
 `;
     let prompt = {
