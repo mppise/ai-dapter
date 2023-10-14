@@ -116,7 +116,7 @@ class AIDapter {
               if (api_endpoint.status == "OK") {
                 this.utils.callAPI(api_endpoint.api.method, api_endpoint.api.url, api_endpoint.api.headers, api_endpoint.api.data || false)
                   .then((resp: any) => {
-                    this.utils.log("I", "[" + resp.status + "] " + api_endpoint.api.url);
+                    this.utils.log("I", "[" + resp.status + "] " + api_endpoint.api.url.split('//')[1].split('/')[0]);
                     this.utils.trackUsage(this.llm.app_name, 'api_calls:' + resp.status, 1, this.llm.telemetry == true);
                     let maxRecords = (dataConfig?.max_records && dataConfig?.max_records > 0) ? (dataConfig?.max_records > 10 ? 10 : dataConfig?.max_records) : 10;
                     let response = resp.data;
