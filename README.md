@@ -89,7 +89,8 @@ List of supported parameters to initialize the setup.
 |`provider`|M|The provider of LLM Model. _Note_: at this point, only models provided directly by OpenAI are supported.|"OpenAI"|
 |`model_name`|M|Allows you to select any model released by the provider. We recommend using models that allow large token sizes, such as `gpt-3.5-turbo-16k`.|-|
 |`endpoint`|M|The endpoint from where the LLM model is served by the provider. You may have to refer to provider-specific documentation. For example, OpenAI chat completion model is serverd from `https://api.openai.com/v1/chat/completions` endpoint.|-|
-|`authentication`|M|Provide authentication details as specified by your provider. For example, since OpenAI requires an API Key and an Organization ID, those are provided under fields `api_key` and `org_id` fields as shown in the initialization example above|-|
+|`authentication`|M|Provide authentication details as specified by your provider. For example, since OpenAI requires an API Key and an Organization ID, those are provided under fields `api_key` and `org_id` fields as shown in the initialization example above.|-|
+|`telemetry`|O|Whether telemetry data can be collected. Default is true.|true / false|
 
 
 ## 5. Agent & Data Configuration Options

@@ -26,7 +26,8 @@ module Types {
     "authentication": {
       "api_key"?: string,
       "org_id"?: string
-    }
+    },
+    "telemetry"?: boolean
   };
 
   // ---------------------------------------------------------------

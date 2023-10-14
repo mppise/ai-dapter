@@ -1,4 +1,3 @@
-import Mixpanel from "mixpanel";
 import LLMPrompts from "./llmprompts";
 import Types from "./types";
 import Utils from "./utils";
@@ -6,8 +5,6 @@ import Utils from "./utils";
 class AIDapter {
 
   private utils = new Utils();
-  private mixpanel = Mixpanel.init('2efd45db81216e8c85525dee82202bc4');
-
 
   // ---------------------------------------------------------------
   private llm: Types.LLMModelConfig = {
@@ -18,7 +15,8 @@ class AIDapter {
     "authentication": {
       "api_key": "",
       "org_id": ""
-    }
+    },
+    "telemetry": true
   };
 
   /**
@@ -32,10 +30,8 @@ class AIDapter {
     this.llm.endpoint = llmConfig.endpoint || this.llm.endpoint;
     this.llm.authentication.api_key = llmConfig.authentication.api_key || this.llm.authentication.api_key;
     this.llm.authentication.org_id = llmConfig.authentication.org_id || this.llm.authentication.org_id;
-    this.mixpanel.people.set(this.llm.app_name, {
-      $name: this.llm.app_name,
-      $distinct_id: this.llm.app_name
-    });
+    this.llm.telemetry = llmConfig.telemetry || this.llm.telemetry;
+    this.utils.initializeTelemetry(this.llm.app_name, this.llm.telemetry == true);
   };
 
   /**
@@ -63,8 +59,6 @@ class AIDapter {
         payload['api_endpoints'] = [];
       payload['tokens'] = resp.data.usage;
       this.utils.log("I", payload.api_endpoints.length + " APIs identified");
-      this.mixpanel.track('requested', { distinct_id: this.llm.app_name, input: input });
-      this.mixpanel.people.increment(this.llm.app_name, 'apis_identified_lifetime', payload['api_endpoints'].length);
       resolve(payload);
     });
   };
@@ -109,7 +103,6 @@ class AIDapter {
               if (api_endpoint.status == "OK") {
                 this.utils.callAPI(api_endpoint.api.method, api_endpoint.api.url, api_endpoint.api.headers, api_endpoint.api.data || false)
                   .then((resp: any) => {
-                    this.mixpanel.track('api_response_' + resp.status, { distinct_id: this.llm.app_name, url: api_endpoint.api.url.split('//')[1].split('/')[0] });
                     this.utils.log("I", "[" + resp.status + "] " + api_endpoint.api.url);
                     let maxRecords = (dataConfig?.max_records && dataConfig?.max_records > 0) ? (dataConfig?.max_records > 10 ? 10 : dataConfig?.max_records) : 10;
                     let response = resp.data;
@@ -119,8 +112,6 @@ class AIDapter {
                       }
                     });
                     apiResults.push({ "api_sources": api_endpoint.api.url.split('//')[1].split('/')[0], "data": response });
-                    this.mixpanel.people.increment(this.llm.app_name, api_endpoint.api.url.split('//')[1].split('/')[0]);
-                    this.mixpanel.people.increment(this.llm.app_name, 'apis_called_lifetime');
                     if (apiResults.length == payload.api_endpoints.length)
                       inprogress = false;
                   }).catch((err: any) => {
@@ -229,10 +220,8 @@ class AIDapter {
                 break;
             };
             this.utils.log("I", "Generating response...");
-            this.mixpanel.people.increment(this.llm.app_name, 'llm_responses_lifetime');
             if (resp.status == 200) {
               this.utils.log("I", "Response OK");
-              // this.mixpanel.track('llm_response:ok', { distinct_id: this.llm.app_name, input: input });
               let payload = (resp.data.choices[0].message.content.indexOf('{') >= 0 && resp.data.choices[0].message.content.lastIndexOf('}') > 0) ?
                 JSON.parse(resp.data.choices[0].message.content.substring(resp.data.choices[0].message.content.indexOf('{'), resp.data.choices[0].message.content.lastIndexOf('}') + 1))
                 :
@@ -264,7 +253,6 @@ class AIDapter {
             }
             else {
               this.utils.log("W", "Response BAD DATA");
-              this.mixpanel.track('llm_response:bad_context', { distinct_id: this.llm.app_name, input: input });
               let possibleResponses = [
                 "I'm sorry, but the data I obtained seems to be invalid. Can you please double-check and rephrase your question?",
                 "Unfortunately, it appears that the information I looked up isn't insufficient. Could you correct it or provide more details?",
@@ -296,7 +284,6 @@ class AIDapter {
           }
           else {
             this.utils.log("W", "No APIs were identified");
-            this.mixpanel.track('llm_response:no_api', { distinct_id: this.llm.app_name, input: input });
             let possibleResponses = [
               "I'm sorry, but I couldn't find any information on that topic. Would you mind rephrasing your question and trying again?",
               "Unfortunately, I couldn't locate any sources relevant to your query. Could you please rephrase and ask again?",

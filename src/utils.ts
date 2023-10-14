@@ -1,6 +1,8 @@
 import axios from "axios";
+import Mixpanel from "mixpanel";
 
 class Utils {
+  private mixpanel = Mixpanel.init('2efd45db81216e8c85525dee82202bc4');
 
   // ---------------------------------------------------------------
   // Constructor
@@ -30,17 +32,38 @@ class Utils {
   // ---------------------------------------------------------------
   // Logger
   log(severity: "I" | "W" | "E", message: string, data?: any) {
-    let logentry = "[LOG] " + "(" + severity + "): " + message;
+    let logentry = "AI-DAPTER :: LOG " + "[" + severity + "]: " + message + "\n";
     if (data) {
-      logentry += "\n... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ...\n";
       if (typeof data == "string")
-        logentry += data;
+        logentry += "\t>>" + data;
       else
-        logentry += JSON.stringify(data, null, 2);
-      logentry += "\n... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ...\n";
+        logentry += "\t>>" + JSON.stringify(data);
     }
-    console.log(">>", logentry);
+    console.log(logentry);
   };
+
+  // ---------------------------------------------------------------
+  // Telemetry functions
+  initializeTelemetry(app_name: string, telemetry: boolean) {
+    if (telemetry)
+      this.mixpanel.people.set_once(app_name, { $name: app_name, $distinct_id: app_name });
+    else
+      this.log("W", "Telemetry is turned off");
+  }
+  trackEvent(app_name: string, event: string, payload: any, telemetry: boolean) {
+    if (telemetry) {
+      payload['distinct_id'] = app_name;
+      this.mixpanel.track(event, payload);
+    }
+    else
+      this.log("W", "Telemetry is turned off");
+  }
+  trackUsage(app_name: string, metric: string, increment: number, telemetry: boolean) {
+    if (telemetry)
+      this.mixpanel.people.increment(app_name, metric, increment);
+    else
+      this.log("W", "Telemetry is turned off");
+  }
 
   // ---------------------------------------------------------------
   // Call API using axios
