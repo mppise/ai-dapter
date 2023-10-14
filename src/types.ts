@@ -19,6 +19,7 @@ module Types {
   // ---------------------------------------------------------------
   // API identification result
   export type LLMModelConfig = {
+    "app_name": string,
     "provider": "OpenAI",
     "model_name": string,
     "endpoint": string,

@@ -70,6 +70,7 @@ To initialize AI-Dapter, you will need to pass some mandatory and some optional 
 
 ```js
 const ai = new AIDapter({
+  "app_name": "<<Short App Name>>"
   "provider": "OpenAI",
   "model_name": "gpt-3.5-turbo-16k",
   "endpoint": "https://api.openai.com/v1/chat/completions",
@@ -84,6 +85,7 @@ List of supported parameters to initialize the setup.
 
 |**Parameter**|**Mandatory(M) / Optional(O)**|**Purpose**|**Possible values**|
 |----------|:----------:|----------|----------|
+|`app_name`|M|Short app name.|-|
 |`provider`|M|The provider of LLM Model. _Note_: at this point, only models provided directly by OpenAI are supported.|"OpenAI"|
 |`model_name`|M|Allows you to select any model released by the provider. We recommend using models that allow large token sizes, such as `gpt-3.5-turbo-16k`.|-|
 |`endpoint`|M|The endpoint from where the LLM model is served by the provider. You may have to refer to provider-specific documentation. For example, OpenAI chat completion model is serverd from `https://api.openai.com/v1/chat/completions` endpoint.|-|
