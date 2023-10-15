@@ -118,6 +118,7 @@ class AIDapter {
                   .then((resp: any) => {
                     this.utils.log("I", "[" + resp.status + "] " + api_endpoint.api.url.split('//')[1].split('/')[0]);
                     this.utils.trackUsage(this.llm.app_name, 'api_calls:' + resp.status, 1, this.llm.telemetry == true);
+                    this.utils.trackUsage(this.llm.app_name, 'https://' + api_endpoint.api.url.split('//')[1].split('/')[0], 1, this.llm.telemetry == true);
                     let maxRecords = (dataConfig?.max_records && dataConfig?.max_records > 0) ? (dataConfig?.max_records > 10 ? 10 : dataConfig?.max_records) : 10;
                     let response = resp.data;
                     Object.keys(response).forEach((key) => {
