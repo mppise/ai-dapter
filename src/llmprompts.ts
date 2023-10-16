@@ -100,13 +100,13 @@ class LLMPrompts {
       `;
     let format = `# Format`;
     let llmResponse: Types.LLMResponse = {
-      "response": "Provide your response in first-person as follows using basic markdown formatting elements with appropriate sections, titles, lists, etc.: (1) If you have all the information to respond to the question completely, please do so within " + (agent.max_words ? (agent.max_words > 200 ? 200 : agent.max_words) : 200) + " words, or (2) If you find any information is missing, please provide clear guidance on what I must provide to get a complete response.",
+      "response": "Provide your response in first-person as follows with appropriate sections, titles, lists, etc.: (1) If you have all the information to respond to the question completely, please do so within " + (agent.max_words ? (agent.max_words > 200 ? 200 : agent.max_words) : 200) + " words, or (2) If you find any information is missing, please provide clear guidance on what I must provide to get a complete response.",
       "status": "Say 'FOLLOW-UP' if there is any missing information, else say 'OK'. Note that the status does not depend on the confidence of your response.",
       "additional_context": {
         "entities": [{ "Entity Type 1": ["Array of Entity Values"] }, { "Entity Type 2": ["Array of Entity Values"] }],
         "sources": ["Array of API sources found in the context or an empty array"],
         "original_question": input,
-        "response_summary": "What is this conversation about? Who is it about? Write in third-person in less than 100 words.",
+        "response_summary": "Provide contexual information, such as the main idea of this conversation, what is this conversation about, and who is it about. Write in third-person in less than 200 words.",
       }
     }
     format += `
