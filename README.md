@@ -660,3 +660,4 @@ Thus, AI-Dapter was conceptualized, which can be used as a black box by full-sta
 Watch the full demonstration with setup and examples on [YouTube](https://youtu.be/x2RuLgX3J9c).
 
 Check out the demo project on [GitHub](https://github.com/mppise/ai-dapter-demo) for a practical look at AI-Dapter in action. Just clone and update your OpenAI API keys and Org ID.
+
