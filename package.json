@@ -22,7 +22,7 @@
     "API",
     "call API from LLM",
     "prompt engineering",
-    "one-shot",
+    "zero-shot",
     "few-shot",
     "grounding"
   ],
@@ -43,6 +43,7 @@
     "type": "git",
     "url": "https://github.com/mppise/ai-dapter.git"
   },
+  "homepage": "https://aidapter.web.app",
   "devDependencies": {
     "@types/node": "^20.6.3",
     "nodemon": "^3.0.1",

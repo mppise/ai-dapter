@@ -7,7 +7,7 @@ Adapter to connect AI LLM with real-time grounding sources and data
 
 ## 1. Concept
 
-As multi-modal artificial intelligence models, LLMs have broad applicability for generating content with minimal instructions. Prompting techniques such as one-shot or few-shot are popular amongst everyday users of chat applications built on top of such LLMs. That said, although the quality of the response is excellent, how much can we trust it? How do we know the model isn't "making up" (a.k.a. hallucinating) on-the-fly?
+As multi-modal artificial intelligence models, LLMs have broad applicability for generating content with minimal instructions. Prompting techniques such as zero-shot or few-shot are popular amongst everyday users of chat applications built on top of such LLMs. That said, although the quality of the response is excellent, how much can we trust it? How do we know the model isn't "making up" (a.k.a. hallucinating) on-the-fly?
 
 As a result, [**grounding**](https://techcommunity.microsoft.com/t5/fasttrack-for-azure/grounding-llms/ba-p/3843857) LLMs by providing contextual data in combination with proper prompting techniques is very important. Using prompts with grounded information as context to help LLM generate a better response is a practice widely followed. 
 
@@ -24,7 +24,7 @@ That's where AI-Dapter (read as, *AI Adapter*) comes into play. AI-Dapter accele
 
 ## 2. Developer Experience
 
-The developer experience is improved tremendously by plugging in the AI-Dapter framework within the application code and seamlessly using it as a [**black box**](https://en.wikipedia.org/wiki/Black_box) to perform LLM-based responses to user's questions. Note that these user questions themselves might be close to a one-shot prompt! 
+The developer experience is improved tremendously by plugging in the AI-Dapter framework within the application code and seamlessly using it as a [**black box**](https://en.wikipedia.org/wiki/Black_box) to perform LLM-based responses to user's questions. Note that these user questions themselves might be close to a zero-shot prompt! 
 
 The actual work behind this black box includes:
 
