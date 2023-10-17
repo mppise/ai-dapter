@@ -86,8 +86,8 @@ class AIDapter {
           if (Object.keys(context).length > 0) {
             if (context.original_question)
               questions.push(context.original_question);
-            if (context.response_summary)
-              addContext.push(context.response_summary);
+            if (context.topic)
+              addContext.push(context.topic);
             if (context.entities)
               entities.push(context.entities);
           }
@@ -148,9 +148,9 @@ class AIDapter {
                         placeholdersUndetermined.push(placeholder.placeholder);
                     }
                   });
-                  this.utils.log("W", placeholdersUndetermined.length + " placeholders undetermined", placeholdersUndetermined.join(","));
                   if (placeholdersUndetermined.length) {
                     apiResults.push({ "missing_placeholder_values": placeholdersUndetermined.join(",") });
+                    this.utils.log("W", "Missing placeholder values: " + placeholdersUndetermined.join(","));
                     if (apiResults.length == payload.api_endpoints.length)
                       inprogress = false;
                   }
@@ -245,7 +245,7 @@ class AIDapter {
                     "sources": [],
                     "conversation": {
                       "original_question": input,
-                      "response_summary": resp.data.choices[0].message.content.substring(0, 25)
+                      "topic": resp.data.choices[0].message.content.substring(0, 25)
                     },
                     "additional_context": {},
                     "entities": []
@@ -282,7 +282,7 @@ class AIDapter {
                   "sources": [],
                   "conversation": {
                     "original_question": input,
-                    "response_summary": possibleResponses[Math.floor(Math.random() * possibleResponses.length)]
+                    "topic": possibleResponses[Math.floor(Math.random() * possibleResponses.length)]
                   },
                   "additional_context": {},
                   "entities": []
@@ -314,7 +314,7 @@ class AIDapter {
                 "sources": [],
                 "conversation": {
                   "original_question": input,
-                  "response_summary": possibleResponses[Math.floor(Math.random() * possibleResponses.length)]
+                  "topic": possibleResponses[Math.floor(Math.random() * possibleResponses.length)]
                 },
                 "additional_context": {},
                 "entities": []

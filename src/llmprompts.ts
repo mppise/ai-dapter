@@ -22,7 +22,7 @@ class LLMPrompts {
   forRealtimeSources(input: string, apiRepository: Array<Types.APIRepository>) {
     let system = `# System`;
     system += `
-    You are an API server that identifies suitable API endpoints that can be later used to obtain data that will help answer my question. Once the APIs have been identified, you are expected to first keep track of all the placeholders and then replace them with valid URL-encoded values. The API repository provided below consists of various fields which will help you (1) identify the APIs, and (2) determine appropriate placeholder values that meets the specified validation requirement.
+    You are an API server that identifies suitable API endpoints that can be later used to obtain data that will help answer my question. Once the APIs have been identified, you are expected to keep track of all the placeholders and replace them with valid URL-encoded values. The API repository is provided as context below, which contains instructions that will help you determine appropriate placeholder values and validation requirements to ensure appropriate values are determined.
     `;
     let context = `# Context`;
     context += `
@@ -62,11 +62,11 @@ class LLMPrompts {
     `;
     let task = `# Task`;
     task += `
-    Look at my question below and follow above instructions to respond. Make sure the question I asked is within constitutional bounds of fairness, accountability, responsibility, harmless, respectful, compliant, and humane, or else politely decline to answer.
+    Look at my question below. Ensure the question I asked is within constitutional bounds of fairness, accountability, responsibility, harmless, respectful, compliant, and humane, or politely decline to answer.
     Before providing your final response, go through it step by step and validate the following:
-    - whether all APIs have been identified based on my question,
-    - whether all placeholders values have been identified.
-    - whether the API endpoint is updated with placeholder values.
+    - ensure only the API repository provided as context is used for API identification,
+    - whether all appropriate APIs have been identified based on my question,
+    - whether all placeholders in the API endpoints have been raeplaced with appropriately determined placeholder values.
     `+ input + `
     `;
     let prompt = {
@@ -75,7 +75,7 @@ class LLMPrompts {
       "format": format,
       "task": task
     };
-    // this.utils.log("I", "Prompt (for API identification)", system + context + format + task);
+    this.utils.log("I", "Prompt (for API identification)", system + context + format + task);
     return prompt;
   };
 
@@ -85,11 +85,9 @@ class LLMPrompts {
     let system = `# System`;
     system += `
     You are a digital `+ (agent.role ? agent.role : `assistant`) + (agent.personality ? ` with ` + agent.personality + ` personality. ` : ` `) + `who responds in the specified JSON format. `;
-    system += `You can only make conversations based on the provided context. If a response cannot be formed strictly using the context, politely say you don't have knowledge about that topic.
-    `;
     system += `` + (agent.expert_at ? `You are also an expert at ` + agent.expert_at + `. ` : ``);
     system += `
-    You must rely only on the provided context to generate a response and must not use your prior knowledge or general knowledge to respond to the question. You must politely decline to engage in any conversation related to legal advise, law and order, medical guidance, financial guidance, and abusive or profanity-based topics.
+    You must primarily rely on the context provided below to respond to the question. You must politely decline to engage in any conversation around legal matters, law and order, medical guidance, financial guidance, and abusive or profanity-based topics.
     `;
     let context = `# Context 
     """
@@ -100,13 +98,13 @@ class LLMPrompts {
       `;
     let format = `# Format`;
     let llmResponse: Types.LLMResponse = {
-      "response": "Provide your response in first-person as follows with appropriate sections, titles, lists, etc.: (1) If you have all the information to respond to the question completely, please do so within " + (agent.max_words ? (agent.max_words > 200 ? 200 : agent.max_words) : 200) + " words, or (2) If you find any information is missing, please provide clear guidance on what I must provide to get a complete response.",
-      "status": "Say 'FOLLOW-UP' if there is any missing information, else say 'OK'. Note that the status does not depend on the confidence of your response.",
+      "response": "Provide your response using markdown format as follows: (1) If the context provided indicates missing placeholder values, please provide clear guidance on what is required to generate a complete response, else (2) respond to the full or part of the question completely within " + (agent.max_words ? (agent.max_words > 200 ? 200 : agent.max_words) : 200) + " words.",
+      "status": "Say 'FOLLOW-UP' if there are missing placeholder values, else say 'OK'.",
       "additional_context": {
+        "original_question": input,
+        "topic": "Suggest a contexual topic name in less than 60 words.",
         "entities": [{ "Entity Type 1": ["Array of Entity Values"] }, { "Entity Type 2": ["Array of Entity Values"] }],
         "sources": ["Array of API sources found in the context or an empty array"],
-        "original_question": input,
-        "response_summary": "Provide contexual information, such as the main idea of this conversation, what is this conversation about, and who is it about. Write in third-person in less than 200 words.",
       }
     }
     format += `
@@ -121,8 +119,6 @@ class LLMPrompts {
     task += `
     Look at my question below and follow above instructions to respond. Make sure the question I asked is within constitutional bounds of fairness, accountability, responsibility, harmless, respectful, compliant, and humane, or else politely decline to answer.
     Before providing your final response, go through it step by step and validate the following:
-    - whether the question was answered completely based on available information.
-    - if information was missing, it is included in the response posed as a follow-up question.
     - whether the status is updated appropriately.
     - whether all key Entity Types and Entity Values are identified from this conversation and listed as key-value pairs.
     - whether sources have been identified and listed.
@@ -135,7 +131,7 @@ class LLMPrompts {
       "format": format,
       "task": task
     };
-    // this.utils.log("I", "Prompt (for response)", system + context + format + task);
+    this.utils.log("I", "Prompt (for response)", system + context + format + task);
     return prompt;
   };
 

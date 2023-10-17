@@ -32,12 +32,12 @@ class Utils {
   // ---------------------------------------------------------------
   // Logger
   log(severity: "I" | "W" | "E", message: string, data?: any) {
-    let logentry = "AI-DAPTER :: " + "[" + severity + "]: " + message + "\n";
+    let logentry = "AI-DAPTER :: " + "[" + severity + "]: " + message;
     if (data) {
       if (typeof data == "string")
-        logentry += ">>\t" + data;
+        logentry += "\n>>\t" + data;
       else
-        logentry += ">>\t" + JSON.stringify(data);
+        logentry += "\n>>\t" + JSON.stringify(data);
     }
     console.log(logentry);
   };
