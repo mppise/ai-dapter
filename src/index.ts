@@ -59,6 +59,25 @@ class AIDapter {
       let payload = JSON.parse(llmResponse.substring(llmResponse.indexOf('{'), llmResponse.lastIndexOf('}') + 1)); // only select JSON object
       if (!payload['api_endpoints'])
         payload['api_endpoints'] = [];
+      payload.api_endpoints.forEach((api_endpoint: any, i: number) => {
+        let placeholdersUndetermined: Array<any> = [];
+        if (api_endpoint['placeholders']) {
+          api_endpoint.placeholders.forEach((placeholder: any) => {
+            if (!placeholder.determined)
+              placeholdersUndetermined.push(placeholder.placeholder);
+          });
+        }
+        // missing placeholder values
+        if (placeholdersUndetermined.length)
+          payload.api_endpoints[i]['undetermined'] = placeholdersUndetermined;
+        // status = OK or NOT-OK
+        if (!api_endpoint['status']) {
+          if (placeholdersUndetermined.length)
+            api_endpoint['status'] = "NOT-OK";
+          else
+            api_endpoint['status'] = "OK";
+        }
+      });
       payload['tokens'] = resp.data.usage;
       this.utils.log("I", payload.api_endpoints.length + " APIs identified");
       this.utils.trackUsage(this.llm.app_name, 'apis_identified', payload.api_endpoints.length, this.llm.telemetry == true);
@@ -112,59 +131,36 @@ class AIDapter {
         .then((payload: any) => {
           let apiResults: any = [];
           payload.api_endpoints.forEach((api_endpoint: any, i: number) => {
-            if (api_endpoint['status']) {
-              if (api_endpoint.status == "OK") {
-                this.utils.callAPI(api_endpoint.api.method, api_endpoint.api.url, api_endpoint.api.headers, api_endpoint.api.data || false)
-                  .then((resp: any) => {
-                    this.utils.log("I", "[" + resp.status + "] " + api_endpoint.api.url.split('//')[1].split('/')[0]);
-                    this.utils.trackUsage(this.llm.app_name, 'api_calls:' + resp.status, 1, this.llm.telemetry == true);
-                    this.utils.trackUsage(this.llm.app_name, 'https://' + api_endpoint.api.url.split('//')[1].split('/')[0], 1, this.llm.telemetry == true);
-                    let maxRecords = (dataConfig?.max_records && dataConfig?.max_records > 0) ? (dataConfig?.max_records > 10 ? 10 : dataConfig?.max_records) : 10;
-                    let response = resp.data;
-                    Object.keys(response).forEach((key) => {
-                      if (Array.isArray(response[key])) {
-                        response[key].splice(maxRecords);  // Limit data results
-                      }
-                    });
-                    apiResults.push({ "api_sources": api_endpoint.api.url.split('//')[1].split('/')[0], "data": response });
-                    if (apiResults.length == payload.api_endpoints.length)
-                      inprogress = false;
-                  }).catch((err: any) => {
-                    this.utils.log("E", api_endpoint.api.url, err);
-                    reject({
-                      "api_results": err,
-                      "tokens": payload.tokens
-                    });
-                  });
-              }
-              else {
-                this.utils.trackUsage(this.llm.app_name, 'api_calls:skipped', 1, this.llm.telemetry == true);
-                this.utils.log("I", "[skipping] " + api_endpoint.api.url);
-                let placeholdersUndetermined: any = [];
-                if (api_endpoint['placeholders']) {
-                  api_endpoint.placeholders.forEach((placeholder: any) => {
-                    if (placeholder['placeholder']) {
-                      if (!placeholder.determined)
-                        placeholdersUndetermined.push(placeholder.placeholder);
+            if (api_endpoint.status == "OK") {
+              this.utils.callAPI(api_endpoint.api.method, api_endpoint.api.url, api_endpoint.api.headers, api_endpoint.api.data || false)
+                .then((resp: any) => {
+                  this.utils.log("I", "[" + resp.status + "] " + api_endpoint.api.url.split('//')[1].split('/')[0]);
+                  this.utils.trackUsage(this.llm.app_name, 'api_calls:' + resp.status, 1, this.llm.telemetry == true);
+                  this.utils.trackUsage(this.llm.app_name, 'https://' + api_endpoint.api.url.split('//')[1].split('/')[0], 1, this.llm.telemetry == true);
+                  let maxRecords = (dataConfig?.max_records && dataConfig?.max_records > 0) ? (dataConfig?.max_records > 10 ? 10 : dataConfig?.max_records) : 10;
+                  let response = resp.data;
+                  Object.keys(response).forEach((key) => {
+                    if (Array.isArray(response[key])) {
+                      response[key].splice(maxRecords);  // Limit data results
                     }
                   });
-                  if (placeholdersUndetermined.length) {
-                    apiResults.push({ "missing_placeholder_values": placeholdersUndetermined.join(",") });
-                    this.utils.log("W", "Missing placeholder values: " + placeholdersUndetermined.join(","));
-                    if (apiResults.length == payload.api_endpoints.length)
-                      inprogress = false;
-                  }
-                }
-                else {
-                  apiResults.push('-');
+                  apiResults.push({ "api_sources": api_endpoint.api.url.split('//')[1].split('/')[0], "data": response });
                   if (apiResults.length == payload.api_endpoints.length)
                     inprogress = false;
-                }
-              }
+                }).catch((err: any) => {
+                  this.utils.log("E", api_endpoint.api.url.split('//')[1].split('/')[0]);
+                  this.utils.trackUsage(this.llm.app_name, 'api_calls:failed', 1, this.llm.telemetry == true);
+                  resolve({
+                    "api_results": [],
+                    "tokens": payload.tokens
+                  });
+                });
             }
             else {
-              this.utils.log("W", api_endpoint.api.url + " has no status");
-              apiResults.push('-');
+              apiResults.push({ "missing_placeholder_values": api_endpoint.undetermined.join(",") });
+              this.utils.log("W", "[skipping] " + api_endpoint.api.url.split('//')[1].split('/')[0]);
+              this.utils.log("W", "Missing placeholder values: " + api_endpoint.undetermined.join(","));
+              this.utils.trackUsage(this.llm.app_name, 'api_calls:skipped', 1, this.llm.telemetry == true);
               if (apiResults.length == payload.api_endpoints.length)
                 inprogress = false;
             }
@@ -182,9 +178,9 @@ class AIDapter {
               timeout--;
           }, 500);
         }).catch((err: any) => {
-          this.utils.log("E", "Getting realtime sources failed", err);
-          reject({
-            "api_results": err,
+          this.utils.log("E", "Getting realtime sources failed");
+          resolve({
+            "api_results": [],
             "tokens": {
               "prompt_tokens": 0,
               "completion_tokens": 0,
@@ -332,9 +328,6 @@ class AIDapter {
               }
             });
           }
-        }).catch((err: any) => {
-          this.utils.log("E", "Getting realtime data failed", err);
-          reject(err);
         });
     });
   };

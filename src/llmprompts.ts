@@ -22,11 +22,11 @@ class LLMPrompts {
   forRealtimeSources(input: string, apiRepository: Array<Types.APIRepository>) {
     let system = `# System`;
     system += `
-    You are an API server that identifies suitable API endpoints that can be later used to obtain data that will help answer my question. Once the APIs have been identified, you are expected to keep track of all the placeholders and replace them with valid URL-encoded values. The API repository is provided as context below, which contains instructions that will help you determine appropriate placeholder values and validation requirements to ensure appropriate values are determined.
+    You are an API server that identifies suitable APIs that will help answer my question. Once the APIs have been identified, you are expected to replace all placeholders with valid URL-encoded values. The API repository that is provided as context below, contains instructions that will help you determine appropriate placeholder values and validation requirements to ensure appropriate values are determined.  Note: Today's date is, ` + new Date().toDateString() + `, which can be used to derive dates relative to today.
     `;
     let context = `# Context`;
     context += `
-    Identified APIs must strictly belong within the following list. If none of the APIs from the list can be used to answer the question, do not respond.
+    Identified APIs must strictly belong within the following list.
     """`;
     apiRepository.forEach((api, i) => {
       context += `
@@ -39,14 +39,18 @@ class LLMPrompts {
     let format = `# Format`;
     let apiidresult: Array<Types.APIidResult> = [
       {
-        "api": { "method": "?", "url": "?", "headers": "?" },
+        "api": {
+          "method": "as specified in the identified api_endpoint.",
+          "url": "rewrite url after replacing placeholders where you can determine a value based on my question.",
+          "headers": "rewrite headers after replacing placeholders where you can determine a value based on my question."
+        },
         "placeholders": [
           {
-            "placeholder": "placeholders from API repository. Today's date is, " + new Date().toDateString() + ", and can be used to derive dates relative to today.",
-            "determined": "Boolean true a valid placeholder value was determined by you | false if placeholder value does not meet the validation criteria which is mentioned in the API endpoint.",
+            "placeholder": "individual placeholder from API repository.",
+            "determined": "Boolean true if a valid placeholder value was determined, else Boolean false.",
           },
         ],
-        "status": "say 'OK' only if all 'determined' fields are true, else say 'NOT-OK'"
+        "status": "say 'OK' only if all 'determined' fields are true, else say 'NOT-OK'."
       }
     ];
     format += `
@@ -64,9 +68,11 @@ class LLMPrompts {
     task += `
     Look at my question below. Ensure the question I asked is within constitutional bounds of fairness, accountability, responsibility, harmless, respectful, compliant, and humane, or politely decline to answer.
     Before providing your final response, go through it step by step and validate the following:
-    - ensure only the API repository provided as context is used for API identification,
-    - whether all appropriate APIs have been identified based on my question,
-    - whether all placeholders in the API endpoints have been raeplaced with appropriately determined placeholder values.
+    - only the API repository is used for API identification and not your prior knowledge of popular APIs,
+    - if an API is identified, response must include 'api', 'placeholders', and 'status' fields,
+    - all placeholders in the identified 'api_endpoint' must be replaced with appropriate values,
+    - all 'placeholders' specified in the identified API from the API repository must be listed in the response 'placeholders' array,
+    - the 'determined' flag for each placeholder must be appropriately set, and so the 'status' flag must also set based on overall placeholders determination.
     `+ input + `
     `;
     let prompt = {
@@ -75,7 +81,7 @@ class LLMPrompts {
       "format": format,
       "task": task
     };
-    this.utils.log("I", "Prompt (for API identification)", system + context + format + task);
+    // this.utils.log("I", "Prompt (for API identification)", system + context + format + task);
     return prompt;
   };
 
@@ -98,11 +104,11 @@ class LLMPrompts {
       `;
     let format = `# Format`;
     let llmResponse: Types.LLMResponse = {
-      "response": "Provide your response using markdown format as follows: (1) If the context provided indicates missing placeholder values, please provide clear guidance on what is required to generate a complete response, else (2) respond to the full or part of the question completely within " + (agent.max_words ? (agent.max_words > 200 ? 200 : agent.max_words) : 200) + " words.",
-      "status": "Say 'FOLLOW-UP' if there are missing placeholder values, else say 'OK'.",
+      "response": "Provide your response using markdown format as follows: (1) If the context indicates missing values, request more information in a simple tone, else (2) respond to the full or part of the question completely within " + (agent.max_words ? (agent.max_words > 200 ? 200 : agent.max_words) : 200) + " words.",
+      "status": "if there are missing placeholder values, say 'FOLLOW-UP', else say 'OK'.",
       "additional_context": {
         "original_question": input,
-        "topic": "Suggest a contexual topic name in less than 60 words.",
+        "topic": "Describe the context of the conversation in less than 60 words.",
         "entities": [{ "Entity Type 1": ["Array of Entity Values"] }, { "Entity Type 2": ["Array of Entity Values"] }],
         "sources": ["Array of API sources found in the context or an empty array"],
       }
@@ -119,10 +125,10 @@ class LLMPrompts {
     task += `
     Look at my question below and follow above instructions to respond. Make sure the question I asked is within constitutional bounds of fairness, accountability, responsibility, harmless, respectful, compliant, and humane, or else politely decline to answer.
     Before providing your final response, go through it step by step and validate the following:
-    - whether the status is updated appropriately.
-    - whether all key Entity Types and Entity Values are identified from this conversation and listed as key-value pairs.
-    - whether sources have been identified and listed.
-    - whether response_summary contains enough information about the context of this conversation.
+    - 'status' must indicate if a complete response was provided or a follow-up is necessary,
+    - a short and suitable 'topic' is identified for future context,
+    - all Entities must be identified from this conversation and listed as key-value pairs within 'entities' array,
+    - 'sources' must be identified and listed.
     Question: `+ input + `
 `;
     let prompt = {
@@ -131,7 +137,7 @@ class LLMPrompts {
       "format": format,
       "task": task
     };
-    this.utils.log("I", "Prompt (for response)", system + context + format + task);
+    // this.utils.log("I", "Prompt (for response)", system + context + format + task);
     return prompt;
   };
 
