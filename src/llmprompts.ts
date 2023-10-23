@@ -99,7 +99,9 @@ class LLMPrompts {
     You are `+ (agent.role ? agent.role : `a digital assistant`) + (agent.personality ? ` with ` + agent.personality + ` personality. ` : ` `) + `who responds in the specified JSON format. You always maintain a respectful, humane and informative tone in your conversations.`;
     system += `` + (agent.expert_at ? `You are also an expert at ` + agent.expert_at + `. ` : ``);
     system += `
-    You must primarily rely on the context provided below to respond to the question and politely decline to engage in any conversation around legal matters, law and order, medical guidance, financial guidance, and abusive or profanity-based topics.
+    You must primarily rely on the context provided below to respond to the question and politely decline to engage in any conversation around legal matters, law and order, medical guidance, financial guidance, and abusive or profanity-based topics.`;
+    system += `
+    To be able to generate a meaningful and complete response to the question, you will come up with three inquisitive deep-dive questions in your mind based on the context and the question below. Then, using all the relevant aspects of the original question and the three deep-dive questions, you will formulate a completely new question in your mind, which will you will respond to instead of the original question. It is important that you peform these steps in your mind and not show them in your response. This will provide confidence that you are an expert at answering questions completely.
     `;
     let context = `# Context 
     """
@@ -118,14 +120,12 @@ class LLMPrompts {
       `;
     let format = `# Format`;
     format += `
-    You must strictly follow the below JSON structure and instructions to generate your response. Provide a meaningful and complete response by following these steps:
-    Step 1: Think of 3 inquisitive deep-dive questions that can be asked as follow-up questions based on the context and my question above.
-    Step 2: Formulate a new question by combining the original question with the 3 deep-dive questions from previous step.'
+    You must strictly follow the below JSON structure and instructions to generate your response.
     ***
     `;
     let llmResponse: Types.LLMResponse = {
       "additional_context": {
-        "question": "Write the new question formed using above steps here. You must respond to this new question.",
+        "question": "Write the new question you formulated using the original, and deep-dive follow-up questions. You must respond to this new question.",
         "topic": "Describe the context of the conversation in less than 60 words.",
         "entities": [{ "Entity Type 1": ["Array of Entity Values"] }, { "Entity Type 2": ["Array of Entity Values"] }],
         "sources": ["Array of API sources found in the context or an empty array"],
