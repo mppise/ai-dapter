@@ -23,6 +23,12 @@ class LLMPrompts {
     let system = `# System`;
     system += `
     You are an API server that identifies suitable APIs that will help answer my question. Once the APIs have been identified, you are expected to replace all placeholders with valid URL-encoded values. The API repository that is provided as context below, contains instructions that will help you determine appropriate placeholder values and validation requirements to ensure appropriate values are determined.  Note: Today's date is, ` + new Date().toDateString() + `, which can be used to derive dates relative to today.
+    To ensure that you respond the question completely, follow these steps:
+    ---
+    Step 1: Think of 3 possible inquisitive deep-dive questions that can be asked as follow-up questions based on the context and my original question below.
+    Step 2: Combine my original question with the deep-dive questions you came up with and form a completely new question.
+    ---
+    Use the newly formed question to determine suitable APIs.
     `;
     let context = `# Context`;
     context += `
@@ -66,7 +72,7 @@ class LLMPrompts {
     `;
     let task = `# Task`;
     task += `
-    Look at my question below. Ensure the question I asked is within constitutional bounds of fairness, accountability, responsibility, harmless, respectful, compliant, and humane, or politely decline to answer.
+    Look at the question below. If the question I asked is within constitutional bounds of fairness, accountability, responsibility, harmless, respectful, compliant, and humane, proeed to find suitable APIs as instructed above, or politely decline to answer.
     Before providing your final response, go through it step by step and validate the following:
     - only the API repository is used for API identification and not your prior knowledge of popular APIs,
     - if an API is identified, response must include 'api', 'placeholders', and 'status' fields,
@@ -90,8 +96,9 @@ class LLMPrompts {
   forResponseWithData(input: string, data: any, agent: any) {
     let system = `# System`;
     system += `
-    You are a digital `+ (agent.role ? agent.role : `assistant`) + (agent.personality ? ` with ` + agent.personality + ` personality. ` : ` `) + `who responds in the specified JSON format. `;
+    You are `+ (agent.role ? agent.role : `a digital assistant`) + (agent.personality ? ` with ` + agent.personality + ` personality. ` : ` `) + `who responds in the specified JSON format. Your must always maintain a respectful, humane and informative tone in your conversations.`;
     system += `` + (agent.expert_at ? `You are also an expert at ` + agent.expert_at + `. ` : ``);
+    system += `You must always maintain a respectful and humane tone in your conversations.`;
     system += `
     You must primarily rely on the context provided below to respond to the question. You must politely decline to engage in any conversation around legal matters, law and order, medical guidance, financial guidance, and abusive or profanity-based topics.
     `;
@@ -104,33 +111,43 @@ class LLMPrompts {
       `;
     let format = `# Format`;
     let llmResponse: Types.LLMResponse = {
-      "response": "Provide your response using markdown format as follows: (1) If the context indicates missing values, request more information in a simple tone, else (2) respond to the full or part of the question completely within " + (agent.max_words ? (agent.max_words > 200 ? 200 : agent.max_words) : 200) + " words.",
+      "response": "Provide complete response to the new question you formed using the steps above. Use markdown format and following guidance to respond appropriately: (1) If the context indicates missing values, request more information in a simple tone, else (2) respond to the full or part of the question completely within " + (agent.max_words ? (agent.max_words > 200 ? 200 : agent.max_words) : 200) + " words.",
       "status": "if there are missing placeholder values, say 'FOLLOW-UP', else say 'OK'.",
       "additional_context": {
-        "original_question": input,
+        "question": "Provide the new question you formed by thinking of follow-up deep-dive questions.",
         "topic": "Describe the context of the conversation in less than 60 words.",
         "entities": [{ "Entity Type 1": ["Array of Entity Values"] }, { "Entity Type 2": ["Array of Entity Values"] }],
         "sources": ["Array of API sources found in the context or an empty array"],
       }
     }
     format += `
-    You must strictly follow the below JSON structure to generate your response.
+    To ensure that you respond the question completely, follow these steps:
     ---
+    Step 1: Think of 3 possible inquisitive deep-dive questions that can be asked as follow-up questions based on the context above and my original question below.
+    Step 2: Combine my original question with the deep-dive questions you came up with and form a completely new question.
+    ---
+    You must strictly follow the below JSON structure to generate your response.
+    ***
     `;
     format += JSON.stringify(llmResponse);
     format += `
-    ---
+    ***
     `;
-    let task = `# Task`;
+    let task = `# Question`;
     task += `
-    Look at my question below and follow above instructions to respond. Make sure the question I asked is within constitutional bounds of fairness, accountability, responsibility, harmless, respectful, compliant, and humane, or else politely decline to answer.
+    "` + input + `"
+    `;
+    task += `# Task`;
+    task += `
+    Look at my question and if it is within constitutional bounds of fairness, accountability, responsibility, harmless, respectful, compliant, and humane, provide your response as instructed above, or else politely decline to respond.
     Before providing your final response, go through it step by step and validate the following:
+    - the new question formed by using original question and the deep-dive follow-up questions must be mentioned in the 'question' field,
+    - 'response' must be the response to the new question and not my original question,
     - 'status' must indicate if a complete response was provided or a follow-up is necessary,
     - a short and suitable 'topic' is identified for future context,
     - all Entities must be identified from this conversation and listed as key-value pairs within 'entities' array,
     - 'sources' must be identified and listed.
-    Question: `+ input + `
-`;
+    `;
     let prompt = {
       "system": system,
       "context": context,

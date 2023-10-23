@@ -130,7 +130,7 @@ Below are currently supported data configuration parameters. Add these fields un
 |**Parameter**|**Mandatory(M) / Optional(O)**|**Purpose**|**Possible values**|
 |----------|:----------:|----------|----------|
 |`max_records`|M|Controls how many top records from a result-set obtained from real-time API call should be retailed. This parameter is essential to control the input token size as results from the API call are used in grounding. **Note**: Because only top X rows are retained, it is best to provide API endpoints that would include data sorted in descending order. Default=10|Any number between 1 and 10|
-|`additional_context`|O|Additional context can be provided when follow-up-like capabiltiies are expected. (see examples from 6.3. Generation of LLM response with grounding real-time data).|Must be an array with the structure as follows: ```[{ "original_question": "", "response_summary": "", "entities": { ... } }, { ... }]```|
+|`additional_context`|O|Additional context can be provided when follow-up-like capabiltiies are expected. (see examples from 6.3. Generation of LLM response with grounding real-time data).|Must be an array with the structure as follows: ```[{ "question": "", "response_summary": "", "entities": { ... } }, { ... }]```|
 |`max_contexts`|O|Retains latest X contexts. AI-Dapter will retain the last two elements of the `additional_context` array, assuming the latest context is always appended at the end of this array.|1 or 2|
 
 
@@ -449,7 +449,7 @@ ai.getLLMResponseFromRealtimeSources(question, apiRepository, options)
       "ai_response": "The current time in Mumbai is 08:55 AM on October 8, 2023.",
         "ai_status": "OK",
           "ai_context": {
-        "original_question": "\"what time is it in Mumbai?\"",
+        "question": "\"what time is it in Mumbai?\"",
           "response_summary": "The current time in Mumbai is 08:55 AM on October 8, 2023.",
             "entities": {
           "Location": [
@@ -492,7 +492,7 @@ An example shows how the context can be passed to enable follow-up conversations
 // As shown in the previous example, ai_context contains the following information:
 // -----------------------------------------------------------------------------
 //  resp.ai_context = {
-//   "original_question": "What time is it in Mumbai?",
+//   "question": "What time is it in Mumbai?",
 //   "response_summary": "The current time in Mumbai is 08:55 AM on October 8, 2023.",
 //   "entities": {
 //      "Location": ["Mumbai"]
@@ -523,7 +523,7 @@ ai.getLLMResponseFromRealtimeSources(question, apiRepository, options)
       "ai_response": "The current timezone is Asia/Kolkata.",
       "ai_status": "OK",
       "ai_context": {
-        "original_question": "Which timezone is it in?",
+        "question": "Which timezone is it in?",
         "response_summary": "The current timezone is Asia/Kolkata.",
         "entities": { }
       },

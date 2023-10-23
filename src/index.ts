@@ -103,8 +103,8 @@ class AIDapter {
         dataConfig?.additional_context.splice(0, dataConfig?.additional_context.length - maxContext); // Limit context results
         dataConfig?.additional_context.forEach((context: any, i) => {
           if (Object.keys(context).length > 0) {
-            if (context.original_question)
-              questions.push(context.original_question);
+            if (context.question)
+              questions.push(context.question);
             if (context.topic)
               addContext.push(context.topic);
             if (context.entities)
@@ -210,8 +210,8 @@ class AIDapter {
                 options.dataConfig?.additional_context.splice(0, options.dataConfig?.additional_context.length - maxContext); // Limit context results
                 options.dataConfig?.additional_context.forEach((context: any, i) => {
                   if (Object.keys(context).length > 0) {
-                    if (context.original_question)
-                      question.push(context.original_question);
+                    if (context.question)
+                      question.push(context.question);
                   }
                 });
               }
@@ -240,7 +240,7 @@ class AIDapter {
                   "additional_context": {
                     "sources": [],
                     "conversation": {
-                      "original_question": input,
+                      "question": input,
                       "topic": resp.data.choices[0].message.content.substring(0, 25)
                     },
                     "additional_context": {},
@@ -277,7 +277,7 @@ class AIDapter {
                 "ai_context": {
                   "sources": [],
                   "conversation": {
-                    "original_question": input,
+                    "question": input,
                     "topic": possibleResponses[Math.floor(Math.random() * possibleResponses.length)]
                   },
                   "additional_context": {},
@@ -309,7 +309,7 @@ class AIDapter {
               "ai_context": {
                 "sources": [],
                 "conversation": {
-                  "original_question": input,
+                  "question": input,
                   "topic": possibleResponses[Math.floor(Math.random() * possibleResponses.length)]
                 },
                 "additional_context": {},
