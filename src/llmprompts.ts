@@ -125,7 +125,7 @@ class LLMPrompts {
     `;
     let llmResponse: Types.LLMResponse = {
       "additional_context": {
-        "question": "Write the new question you formulated using the original, and deep-dive follow-up questions. You must respond to this new question.",
+        "question": "Write the new question you formulated using all the relevant aspects of the original, and the deep-dive follow-up questions.",
         "topic": "Describe the context of the conversation in less than 60 words.",
         "entities": [{ "Entity Type 1": ["Array of Entity Values"] }, { "Entity Type 2": ["Array of Entity Values"] }],
         "sources": ["Array of API sources found in the context or an empty array"],
