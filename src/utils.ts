@@ -92,8 +92,8 @@ class Utils {
       "data": {
         "model": llmConfig.model_name,
         "messages": [
-          { "role": "system", "content": prompt.system + prompt.context + prompt.format },
-          { "role": "user", "content": prompt.task }
+          { "role": "system", "content": prompt.system + prompt.context },
+          { "role": "user", "content": prompt.task + prompt.format }
         ],
         "temperature": llmConfig.temperature || 0.6
       }
