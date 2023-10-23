@@ -101,7 +101,7 @@ class LLMPrompts {
     system += `
     You must primarily rely on the context provided below to respond to the question and politely decline to engage in any conversation around legal matters, law and order, medical guidance, financial guidance, and abusive or profanity-based topics.`;
     system += `
-    To be able to generate a meaningful and complete response to the question, you will come up with three inquisitive deep-dive questions in your mind based on the context and the question below. Then, using all the relevant aspects of the original question and the three deep-dive questions, you will formulate a completely new question in your mind, which will you will respond to instead of the original question. It is important that you peform these steps in your mind and not show them in your response. This will provide confidence that you are an expert at answering questions completely.
+    To be able to generate a meaningful and complete response to the question, you will come up with three inquisitive deep-dive questions in your mind based on the context and the question below. Then, using all the relevant aspects of the original question and the three deep-dive questions, you will formulate completely new questions in your mind, which will you will respond to instead of the original question. It is important that you peform these steps in your mind and not show them in your response. This will provide confidence that you are an expert at answering questions completely.
     `;
     let context = `# Context 
     """
@@ -125,7 +125,7 @@ class LLMPrompts {
     `;
     let llmResponse: Types.LLMResponse = {
       "additional_context": {
-        "question": "Write the new question you formulated using all the relevant aspects of the original, and the deep-dive follow-up questions.",
+        "question": "Write the new questions you formulated using all the relevant aspects of the original, and the deep-dive follow-up questions.",
         "topic": "Describe the context of the conversation in less than 60 words.",
         "entities": [{ "Entity Type 1": ["Array of Entity Values"] }, { "Entity Type 2": ["Array of Entity Values"] }],
         "sources": ["Array of API sources found in the context or an empty array"],
