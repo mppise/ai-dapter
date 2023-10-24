@@ -22,13 +22,9 @@ class LLMPrompts {
   forRealtimeSources(input: string, apiRepository: Array<Types.APIRepository>) {
     let system = `# System`;
     system += `
-    You are an API server that identifies suitable APIs that will help answer my question. Once the APIs have been identified, you are expected to replace all placeholders with valid URL-encoded values. The API repository that is provided as context below, contains instructions that will help you determine appropriate placeholder values and validation requirements to ensure appropriate values are determined.  Note: Today's date is, ` + new Date().toDateString() + `, which can be used to derive dates relative to today.
-    To ensure that you respond the question completely, follow these steps:
-    ---
-    Step 1: Think of 3 possible inquisitive deep-dive questions that can be asked as follow-up questions based on the context and my original question below.
-    Step 2: Combine my original question with the deep-dive questions you came up with and form a completely new question.
-    ---
-    Use the newly formed question to determine suitable APIs.
+    You are an API server that identifies suitable APIs that will help answer my question. Once the APIs have been identified, you are expected to replace all placeholders with valid URL-encoded values. The API repository that is provided as context below, contains instructions that will help you determine appropriate placeholder values and validation requirements to ensure appropriate values are determined.  Note: Today's date is, ` + new Date().toDateString() + `, which can be used to derive dates relative to today.`;
+    system += `
+    You are an expert at generateing meaningful and complete response. You do this by coming up with 3 inquisitive deep-dive questions in your mind based on the provided context and my question below. Then, using all the relevant aspects of my question below and the 3 deep-dive questions you come up with, you form a completely new question in your mind. Your job is to ultimately respond only to this new question instead of my question below. It is important that you perform these steps in your mind and not show the workings or intermediate results to me. This will provide me the confidence that you are an expert at answering questions completely.
     `;
     let context = `# Context`;
     context += `
@@ -41,6 +37,15 @@ class LLMPrompts {
     });
     context += `
     """
+    `;
+
+    let task = `# Question`;
+    task += `
+      "` + input + `"
+      `;
+    task += `# Task`;
+    task += `
+    Look at my question above and if it is within constitutional bounds of fairness, accountability, responsibility, harmlessness, respect, compliance, and humane, provide your response, else politely decline to respond.
     `;
     let format = `# Format`;
     let apiidresult: Array<Types.APIidResult> = [
@@ -61,26 +66,21 @@ class LLMPrompts {
     ];
     format += `
     You must strictly follow the below JSON structure to generate your response.
-    ---
+    ***
     {
       "api_endpoints":
     `;
     format += JSON.stringify(apiidresult);
     format += `
     }
-    ---
-    `;
-    let task = `# Task`;
-    task += `
-    Look at the question below. If the question I asked is within constitutional bounds of fairness, accountability, responsibility, harmless, respectful, compliant, and humane, proeed to find suitable APIs as instructed above, or politely decline to answer.
-    Before providing your final response, go through it step by step and validate the following:
+    ***`;
+    format += `
+    Before providing your final response, go through the following steps and validate the following:
     - only the API repository is used for API identification and not your prior knowledge of popular APIs,
     - if an API is identified, response must include 'api', 'placeholders', and 'status' fields,
     - all placeholders in the identified 'api_endpoint' must be replaced with appropriate values,
     - all 'placeholders' specified in the identified API from the API repository must be listed in the response 'placeholders' array,
-    - the 'determined' flag for each placeholder must be appropriately set, and so the 'status' flag must also set based on overall placeholders determination.
-    `+ input + `
-    `;
+    - the 'determined' flag for each placeholder must be appropriately set, and so the 'status' flag must also set based on overall placeholders determination.`;
     let prompt = {
       "system": system,
       "context": context,
@@ -99,9 +99,9 @@ class LLMPrompts {
     You are `+ (agent.role ? agent.role : `a digital assistant`) + (agent.personality ? ` with ` + agent.personality + ` personality. ` : ` `) + `who responds in the specified JSON format. You always maintain a respectful, humane and informative tone in your conversations.`;
     system += `` + (agent.expert_at ? `You are also an expert at ` + agent.expert_at + `. ` : ``);
     system += `
-    You must primarily rely on the context provided below to respond to the question and politely decline to engage in any conversation around legal matters, law and order, medical guidance, financial guidance, and abusive or profanity-based topics.`;
+    You must primarily rely on the context provided below to respond to my question and politely decline to engage in any conversation around legal matters, law and order, medical guidance, financial guidance, and abusive or profanity-based topics.`;
     system += `
-    To be able to generate a meaningful and complete response to the question, you will come up with three inquisitive deep-dive questions in your mind based on the context and the question below. Then, using all the relevant aspects of the original question and the three deep-dive questions, you will formulate completely new questions in your mind, which will you will respond to instead of the original question. It is important that you peform these steps in your mind and not show them in your response. This will provide confidence that you are an expert at answering questions completely.
+    You are an expert at generateing meaningful and complete response. You do this by coming up with 3 inquisitive deep-dive questions in your mind based on the provided context and my question below. Then, using all the relevant aspects of my question below and the 3 deep-dive questions you come up with, you form a completely new question in your mind. Your job is to ultimately respond only to this new question instead of my question below. It is important that you perform these steps in your mind and not show the workings or intermediate results to me. This will provide me the confidence that you are an expert at answering questions completely.
     `;
     let context = `# Context 
     """
@@ -116,7 +116,7 @@ class LLMPrompts {
       `;
     task += `# Task`;
     task += `
-      Look at my question above and if it is within constitutional bounds of fairness, accountability, responsibility, harmless, respectful, compliant, and humane, provide your response as instructed in the format requirements below, else politely decline to respond.
+    Look at my question above and if it is within constitutional bounds of fairness, accountability, responsibility, harmlessness, respect, compliance, and humane, provide your response, else politely decline to respond.
       `;
     let format = `# Format`;
     format += `
@@ -125,12 +125,12 @@ class LLMPrompts {
     `;
     let llmResponse: Types.LLMResponse = {
       "additional_context": {
-        "question": "Write the new questions you formulated using all the relevant aspects of the original, and the deep-dive follow-up questions.",
+        "question": "Write the new question from your mind here, which you formed using the relevant aspects of my question and the deep-dive follow-up questions.",
         "topic": "Describe the context of the conversation in less than 60 words.",
         "entities": [{ "Entity Type 1": ["Array of Entity Values"] }, { "Entity Type 2": ["Array of Entity Values"] }],
         "sources": ["Array of API sources found in the context or an empty array"],
       },
-      "response": `Provide your response here in markdown format and the following guidance to respond appropriately:
+      "response": `Provide your response here in markdown format using the following guidance:
       - If the context indicates missing values, request more information in a simple tone, else
       - respond to the full or part of the question completely within ` + (agent.max_words ? (agent.max_words > 200 ? 200 : agent.max_words) : 200) + ` words.`,
       "status": "If there are missing placeholder values, say 'FOLLOW-UP', else say 'OK'."
@@ -139,12 +139,12 @@ class LLMPrompts {
     format += `
     ***
     Before providing your final response, go through the following steps and validate the following:
-    - Make sure you have formulated a new question based on all the relevant aspects of my original question and the deep-dive follow-up questions you created. The new question must appear in the 'question' field within 'additional_context' and must be used by you to provide your response.
+    - Make sure you have formulated a new question based on all the relevant aspects of my question and the deep-dive follow-up questions you came up with. The new question must appear in the 'question' field within 'additional_context'.
     - You must respond only to the newly formulated question and provide your response in 'response' field.
     - You must update the 'status' within 'additional_context' to indicate if a complete response was provided or a follow-up is necessary.
-    - a short and suitable 'topic' must be identified and placed within 'additional_context' for future context.
+    - a short and suitable 'topic' must be identified and also placed within 'additional_context' for future context.
     - all Entities must be identified from this conversation and listed as key-value pairs within 'entities' array of 'additional_context'.
-    - 'sources' must be identified and listed.
+    - 'sources' must be identified and listed within 'additional_context'.
     `;
     let prompt = {
       "system": system,
