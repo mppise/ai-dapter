@@ -72,8 +72,7 @@ module Types {
     "response": string,
     "status": string,
     "additional_context": {
-      "question": string,
-      "topic": string,
+      "questions": string,
       "entities": Array<any>
       "sources": Array<string>
     }

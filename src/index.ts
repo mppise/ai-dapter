@@ -95,7 +95,6 @@ class AIDapter {
   getDataFromRealtimeSource(input: string, apiRepository: Array<Types.APIRepository>, dataConfig?: Types.DataConfig) {
     return new Promise((resolve, reject) => {
       let inprogress = true;
-      let addContext: Array<any> = [];
       let entities: Array<any> = [];
       let questions: Array<any> = [];
       if (dataConfig?.additional_context) {
@@ -103,30 +102,21 @@ class AIDapter {
         dataConfig?.additional_context.splice(0, dataConfig?.additional_context.length - maxContext); // Limit context results
         dataConfig?.additional_context.forEach((context: any, i) => {
           if (Object.keys(context).length > 0) {
-            if (context.question)
-              questions.push(context.question);
-            if (context.topic)
-              addContext.push(context.topic);
+            if (context.questions)
+              questions.push(context.questions);
             if (context.entities)
               entities.push(context.entities);
           }
         });
       }
       questions.push(input);
-      let updatedInput = "";
-      if (addContext.length) {
-        updatedInput += `\nAdditional Context:\n`;
-        addContext.forEach((context: any) => {
-          updatedInput += ((context + `. `) || ``);
-        });
-      }
+      let updatedInput = questions.join(" ");
       if (entities.length) {
         updatedInput += `\nEntities:\n`;
         entities.forEach((entity: any) => {
           updatedInput += ((JSON.stringify(entity) + `\n`) || ``);
         });
       }
-      updatedInput += `\nQuestion:\n` + questions.join(". ");
       this.getRealtimeSources(updatedInput, apiRepository)
         .then((payload: any) => {
           let apiResults: any = [];
@@ -239,13 +229,9 @@ class AIDapter {
                   "status": "OK",
                   "additional_context": {
                     "sources": [],
-                    "conversation": {
-                      "question": input,
-                      "topic": resp.data.choices[0].message.content.substring(0, 25)
-                    },
-                    "additional_context": {},
-                    "entities": []
-                  },
+                    "entities": [],
+                    "questions": input
+                  }
                 };
               this.utils.trackUsage(this.llm.app_name, 'llm_response:' + resp.status, 1, this.llm.telemetry == true);
               resolve({
@@ -276,12 +262,8 @@ class AIDapter {
                 "ai_status": "BAD-DATA",
                 "ai_context": {
                   "sources": [],
-                  "conversation": {
-                    "question": input,
-                    "topic": possibleResponses[Math.floor(Math.random() * possibleResponses.length)]
-                  },
-                  "additional_context": {},
-                  "entities": []
+                  "entities": [],
+                  "questions": input
                 },
                 "tokens": {
                   "api_identification": realtimeData.tokens,
@@ -308,12 +290,8 @@ class AIDapter {
               "ai_status": "NO-SOURCE",
               "ai_context": {
                 "sources": [],
-                "conversation": {
-                  "question": input,
-                  "topic": possibleResponses[Math.floor(Math.random() * possibleResponses.length)]
-                },
-                "additional_context": {},
-                "entities": []
+                "entities": [],
+                "questions": input
               },
               "tokens": {
                 "api_identification": realtimeData.tokens,
