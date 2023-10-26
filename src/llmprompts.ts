@@ -135,7 +135,7 @@ class LLMPrompts {
         "entities": [{ "Entity Type 1": ["Array of Entity Values"] }, { "Entity Type 2": ["Array of Entity Values"] }],
         "sources": ["Array of API sources found in the context or an empty array"],
       },
-      "response": `Provide your response here in markdown format using the following guidance:
+      "response": `Provide your response here in plain-text with proper paragraphs using the following guidance:
       - If the context indicates missing values, request more information in a simple tone, else
       - respond to the full or part of the question completely within ` + (agent.max_words ? (agent.max_words > 200 ? 200 : agent.max_words) : 200) + ` words.`,
       "status": "If there are missing placeholder values, say 'FOLLOW-UP', else say 'OK'."
