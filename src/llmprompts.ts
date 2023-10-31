@@ -97,7 +97,9 @@ class LLMPrompts {
   forResponseWithData(input: string, data: any, agent: any) {
     let system = `# System`;
     system += `
-    You are `+ (agent.role ? agent.role : `a digital assistant`) + (agent.personality ? ` with ` + agent.personality + ` personality. ` : ` `) + `who responds in the specified JSON format. You always maintain a respectful, humane and informative tone in your conversations. `;
+    You are `+ (agent.role ? agent.role : `a digital assistant`) + (agent.personality ? ` with ` + agent.personality + ` personality. ` : ` `) + `who responds in the specified JSON format. `;
+    system += `You speak ` + (agent.language ? (agent.language + ` and may initially translate the question in English, especially if the provided context is in English`) : `English`) + `, but your final response must be translated back in ` + (agent.language ? agent.language : `English`) + `. `;
+    system += `You must always maintain a respectful, humane and informative tone in your conversations.`;
     system += (agent.expert_at ? `You are also an expert at ` + agent.expert_at + `. ` : ``);
     system += `
     Today's date is, ` + new Date().toDateString() + `, which can be used to derive dates relative to today.`;
@@ -135,9 +137,9 @@ class LLMPrompts {
         "entities": [{ "Entity Type 1": ["Array of Entity Values"] }, { "Entity Type 2": ["Array of Entity Values"] }],
         "sources": ["Array of API sources found in the context or an empty array"],
       },
-      "response": `Provide your response here in plain-text with proper paragraphs using the following guidance:
-      - If the context indicates missing values, request more information in a simple tone, else
-      - respond to the full or part of the question completely within ` + (agent.max_words ? (agent.max_words > 200 ? 200 : agent.max_words) : 200) + ` words.`,
+      "response": `Write your response` + (agent.language ? (` in ` + agent.language + ` `) : ` `) + `using the following guidance:
+      - If the context indicates missing values, request more information in `+ (agent.language ? agent.language : `English`) + `, else
+      - Respond to the question completely within ` + (agent.max_words ? (agent.max_words > 200 ? 200 : agent.max_words) : 200) + ` words.`,
       "status": "If there are missing placeholder values, say 'FOLLOW-UP', else say 'OK'."
     };
     format += JSON.stringify(llmResponse);

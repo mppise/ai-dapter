@@ -119,6 +119,7 @@ Below are currently supported agent configuration parameters. Add these fields u
 |----------|:----------:|----------|----------|
 |`role`|M|Helps guide LLM's approach to user questions. For example, in the role of an army Sergeant, LLM may respond to question about current time as something like, "The current time is 08:01 AM EDT.", while a comedian who always tells a one-liner joke about my question may respond something like, "It's time for you to get a watch! Just kidding, it is currently 8:01 AM on October 7th, 2023 in the Eastern Daylight Time (EDT) timezone.".|-|
 |`personality`|O|Gives a personality to the tone of LLM's response.|-|
+|`language`|O|The language you want the agent to respond in irrespective of the language the user question is asked in. Default=English.|-|
 |`expert_at`|O|If LLM should assume they are experts in any specific area, such as healthcare or automobile engines, etc.|-|
 |`max_words`|O|Control how long or short should LLM's response be within. Default is less than 200 words.|Any number between 1 and 200|
 

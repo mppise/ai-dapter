@@ -35,6 +35,7 @@ module Types {
   export type AgentConfig = {
     "role": string,
     "personality"?: string,
+    "language"?: string,
     "expert_at"?: string,
     "max_words"?: number
   };
