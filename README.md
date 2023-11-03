@@ -11,7 +11,7 @@ Listing major enhancements
 
 |**Release**|**Date**|**Key Features**|
 |:----------:|:----------:|----------|
-|1.2.9|Oct 31, 2023|Agent configuration can specify (optional) language key. When this is set, LLM always thinks and responds in specified language (irrespective of input language). _Note_: Translation quality may not be optimal in some cases, so thorough testing is strongly adviced.|
+|1.2.9|Nov 03, 2023|(1) Agent configuration can specify (optional) language key. When this is set, LLM always thinks and responds in specified language (irrespective of input language). _Note_: Translation quality may not be optimal in some cases, so thorough testing is strongly adviced. (2) Response from all-in-one method includes grounding data used by LLM to geenrate a response. This should improve reliability.|
 |1.2.8|Oct 26, 2023|Incorporated [deep-dive prompting technique](https://mangeshpise.medium.com/deep-dive-prompting-technique-to-improve-the-quality-of-llms-response-233f3728223e) to improve quality of response.|
 |1.2.2|Oct 18, 2023|Improved LLM prompts and logic for API determination.|
 |1.1.1|Oct 09, 2023|Introduced LLM prompts to incorporate a flavor of constitutional AI to ensure user input is fair, responsibile, respectful, and humane.|
