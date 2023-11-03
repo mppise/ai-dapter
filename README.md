@@ -5,6 +5,19 @@
 Adapter to connect AI LLM with real-time grounding sources and data
 
 
+## Release Notes 
+#### Listing major enhancements only
+
+|**Release**|**Date**|**Key Features**|
+|:----------:|:----------:|----------|
+|1.2.8|Oct 26, 2023|Incorporated [deep-dive prompting technique](https://mangeshpise.medium.com/deep-dive-prompting-technique-to-improve-the-quality-of-llms-response-233f3728223e) to improve quality of response.|
+|1.2.2|Oct 18, 2023|Improved LLM prompts and logic for API determination.|
+|1.1.1|Oct 09, 2023|Introduced LLM prompts to incorporate a flavor of constitutional AI to ensure user input is fair, responsibile, respectful, and humane.|
+|1.1.0|Oct 08, 2023|Introduced ability to build context/memory for follow-up questions.|
+|1.0.0|Oct 08, 2023|Initial launch.|
+
+
+
 ## 1. Concept
 
 As multi-modal artificial intelligence models, LLMs have broad applicability for generating content with minimal instructions. Prompting techniques such as zero-shot or few-shot are popular amongst everyday users of chat applications built on top of such LLMs. That said, although the quality of the response is excellent, how much can we trust it? How do we know the model isn't "making up" (a.k.a. hallucinating) on-the-fly?
@@ -482,7 +495,7 @@ ai.getLLMResponseFromRealtimeSources(question, apiRepository, options)
 
 Notice that the user question is used first to identify relevant API from the provided API repository. This method also calls the identified APIs, collects their responses to ground the final LLM prompt, and returns the generated response.
 
-#### Additional Context for follow-ups:
+### 6.4. Memory/Context for follow-up
 
 Also, Note that the response contains the LLM-generated content within the `ai_response` field and context within the `ai_context` field. The entire context can be passed as `dataConfig.additional_context` along with follow-up questions.
 
