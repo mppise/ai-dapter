@@ -41,6 +41,7 @@ class AIDapter {
    * @returns Array of relevant API sources populated with placeholder values.
    */
   getRealtimeSources(input: string, apiRepository: Array<Types.APIRepository>) {
+    let runtimeStart = new Date().getTime();
     return new Promise(async (resolve, reject) => {
       this.utils.trackEvent(this.llm.app_name, 'question', { question: input }, this.llm.telemetry == true);
       let llmPrompts = new LLMPrompts();
@@ -79,6 +80,7 @@ class AIDapter {
         }
       });
       payload['tokens'] = resp.data.usage;
+      payload['runtime'] = Math.round((new Date().getTime() - runtimeStart) / 1000) + " seconds"
       this.utils.log("I", payload.api_endpoints.length + " APIs identified");
       this.utils.trackUsage(this.llm.app_name, 'apis_identified', payload.api_endpoints.length, this.llm.telemetry == true);
       resolve(payload);
@@ -93,6 +95,7 @@ class AIDapter {
    * @returns Array of data records based on successful response from identified API endpoints.
    */
   getDataFromRealtimeSource(input: string, apiRepository: Array<Types.APIRepository>, dataConfig?: Types.DataConfig) {
+    let runtimeStart = new Date().getTime();
     return new Promise((resolve, reject) => {
       let inprogress = true;
       let entities: Array<any> = [];
@@ -142,7 +145,8 @@ class AIDapter {
                   this.utils.trackUsage(this.llm.app_name, 'api_calls:failed', 1, this.llm.telemetry == true);
                   resolve({
                     "api_results": [],
-                    "tokens": payload.tokens
+                    "tokens": payload.tokens,
+                    "runtime": Math.round((new Date().getTime() - runtimeStart) / 1000) + " seconds"
                   });
                 });
             }
@@ -161,7 +165,8 @@ class AIDapter {
               clearInterval(intvl);
               resolve({
                 "api_results": apiResults,
-                "tokens": payload.tokens
+                "tokens": payload.tokens,
+                "runtime": Math.round((new Date().getTime() - runtimeStart) / 1000) + " seconds"
               });
             }
             else
@@ -175,7 +180,8 @@ class AIDapter {
               "prompt_tokens": 0,
               "completion_tokens": 0,
               "total_tokens": 0
-            }
+            },
+            "runtime": Math.round((new Date().getTime() - runtimeStart) / 1000) + " seconds"
           });
         });
     });
@@ -189,6 +195,7 @@ class AIDapter {
    * @returns LLM-generated response and additional context to aid follow-ups.
    */
   getLLMResponseFromRealtimeSources(input: string, apiRepository: Array<Types.APIRepository>, options?: Types.AIDapterOptions) {
+    let runtimeStart = new Date().getTime();
     return new Promise((resolve, reject) => {
       this.getDataFromRealtimeSource(input, apiRepository, options?.dataConfig)
         .then(async (realtimeData: any) => {
@@ -244,7 +251,8 @@ class AIDapter {
                   "prompt_tokens": realtimeData.tokens['prompt_tokens'] + resp.data.usage['prompt_tokens'],
                   "completion_tokens": realtimeData.tokens['completion_tokens'] + resp.data.usage['completion_tokens'],
                   "total_tokens": realtimeData.tokens['total_tokens'] + resp.data.usage['total_tokens']
-                }
+                },
+                "runtime": Math.round((new Date().getTime() - runtimeStart) / 1000) + " seconds"
               });
             }
             else {
@@ -271,7 +279,8 @@ class AIDapter {
                   "prompt_tokens": realtimeData.tokens['prompt_tokens'] + resp.data.usage['prompt_tokens'],
                   "completion_tokens": realtimeData.tokens['completion_tokens'] + resp.data.usage['completion_tokens'],
                   "total_tokens": realtimeData.tokens['total_tokens'] + resp.data.usage['total_tokens']
-                }
+                },
+                "runtime": Math.round((new Date().getTime() - runtimeStart) / 1000) + " seconds"
               });
             }
           }
@@ -303,7 +312,8 @@ class AIDapter {
                 "prompt_tokens": realtimeData.tokens['prompt_tokens'],
                 "completion_tokens": realtimeData.tokens['completion_tokens'],
                 "total_tokens": realtimeData.tokens['total_tokens']
-              }
+              },
+              "runtime": Math.round((new Date().getTime() - runtimeStart) / 1000) + " seconds"
             });
           }
         });
