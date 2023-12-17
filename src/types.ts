@@ -27,6 +27,7 @@ module Types {
       "api_key"?: string,
       "org_id"?: string
     },
+    "temperature"?: number,
     "telemetry"?: boolean
   };
 

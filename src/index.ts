@@ -16,6 +16,7 @@ class AIDapter {
       "api_key": "",
       "org_id": ""
     },
+    "temperature": 1.0,
     "telemetry": true
   };
 
@@ -30,6 +31,7 @@ class AIDapter {
     this.llm.endpoint = llmConfig.endpoint || this.llm.endpoint;
     this.llm.authentication.api_key = llmConfig.authentication.api_key || this.llm.authentication.api_key;
     this.llm.authentication.org_id = llmConfig.authentication.org_id || this.llm.authentication.org_id;
+    this.llm.temperature = llmConfig.temperature || this.llm.temperature;
     this.llm.telemetry = llmConfig.telemetry || this.llm.telemetry;
     this.utils.initializeTelemetry(this.llm.app_name, this.llm.telemetry == true);
   };
@@ -49,6 +51,7 @@ class AIDapter {
       let resp: any = {};
       switch (this.llm.provider) {
         case "OpenAI":
+          this.llm['temperature'] = 0.6;
           resp = await this.utils.callOpenAI(this.llm, prompt);
           this.utils.trackUsage(this.llm.app_name, 'openai_calls', 1, this.llm.telemetry == true);
           break;

@@ -93,7 +93,8 @@ const ai = new AIDapter({
   "authentication": {
     "api_key": "<<Your OPENAI Key>>",
     "org_id": "<<Your OPENAI Org ID>>"
-  }
+  },
+  "temperature": "<<between 0.0 and 2.0>>"
 });
 ```
 
