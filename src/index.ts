@@ -16,7 +16,7 @@ class AIDapter {
       "api_key": "",
       "org_id": ""
     },
-    "temperature": 1.0,
+    "temperature": 0.8,
     "telemetry": true
   };
 
