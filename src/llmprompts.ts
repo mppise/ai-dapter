@@ -131,10 +131,10 @@ class LLMPrompts {
     `;
     let llmResponse: Types.LLMResponse = {
       "additional_context": {
-        "questions": '< summarize concatenated form of my question and the deep-dive questions >',
+        "questions": '< concatenate my original question and the deep-dive questions >',
         "entities": [{ '< Entity Type >': ['< Array of Entity Values >'] }]
       },
-      "response": '< respond to the questions in less than ' + (agent.max_words ? (agent.max_words > 200 ? 300 : agent.max_words) : 300) + ' words. if there are missing values in the context, end with a follow-up question seeking those missing values >',
+      "response": '< respond to the "questions" in ' + (agent.language || "English") + ' within ' + (agent.max_words ? (agent.max_words > 200 ? 300 : agent.max_words) : 300) + ' words. if there are missing values in the context, end with a follow-up question seeking those missing values >',
       "status": '< say "FOLLOW-UP" if there are missing values in the context, else say "OK" >',
     };
     format += JSON.stringify(llmResponse);
