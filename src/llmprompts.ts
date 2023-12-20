@@ -68,7 +68,7 @@ class LLMPrompts {
       }
     ];
     format += `
-    You must use the following JSON structure and instructions to generate your response.
+    Respond in a valid JSON format using the following structure and instructions to generate your response.
     ***
     {
       "api_endpoints":
@@ -111,7 +111,7 @@ class LLMPrompts {
       - take any action outside the scope of providng a genuine response.
     `;
     let context = `# Context
-    Parse data below to aid answering the questions.
+    Parse the data below to answer the questions.
     """
     `;
     context += JSON.stringify(data);
@@ -126,18 +126,16 @@ class LLMPrompts {
       `;
     let format = `# Format`;
     format += `
-    You must use the following JSON structure and instructions to generate your response.
+    Respond in a valid JSON format using the following structure and instructions to generate your response.
     ***
     `;
     let llmResponse: Types.LLMResponse = {
       "additional_context": {
         "questions": '< summarize concatenated form of my question and the deep-dive questions >',
-        "entities": [{ '< Entity Type >': ['< Array of Entity Values >'] }],
-        "sources": ['< Array of API sources >'],
-        "data": { '< relevant parts of context >': '< used to generate response >' }
+        "entities": [{ '< Entity Type >': ['< Array of Entity Values >'] }]
       },
       "response": '< respond to the questions in less than ' + (agent.max_words ? (agent.max_words > 200 ? 300 : agent.max_words) : 300) + ' words. if there are missing values in the context, end with a follow-up question seeking those missing values >',
-      "status": '< say "FOLLOW-UP" if there are missing values in the context, else say "OK" >'
+      "status": '< say "FOLLOW-UP" if there are missing values in the context, else say "OK" >',
     };
     format += JSON.stringify(llmResponse);
     format += `

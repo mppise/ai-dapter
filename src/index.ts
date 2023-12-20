@@ -238,11 +238,16 @@ class AIDapter {
                   "response": resp.data.choices[0].message.content,
                   "status": "OK",
                   "additional_context": {
-                    "sources": [],
                     "entities": [],
                     "questions": input
                   }
                 };
+              payload.additional_context['data'] = [];
+              payload.additional_context['sources'] = [];
+              realtimeData.api_results.forEach((result: any) => {
+                payload.additional_context['data'].push(result.data);
+                payload.additional_context['sources'].push(result.api_sources);
+              });
               this.utils.trackUsage(this.llm.app_name, 'llm_response:' + resp.status, 1, this.llm.telemetry == true);
               resolve({
                 "ai_response": payload.response,
@@ -274,7 +279,8 @@ class AIDapter {
                 "ai_context": {
                   "sources": [],
                   "entities": [],
-                  "questions": input
+                  "questions": input,
+                  "data": []
                 },
                 "tokens": {
                   "api_identification": realtimeData.tokens,
@@ -303,7 +309,8 @@ class AIDapter {
               "ai_context": {
                 "sources": [],
                 "entities": [],
-                "questions": input
+                "questions": input,
+                "data": []
               },
               "tokens": {
                 "api_identification": realtimeData.tokens,

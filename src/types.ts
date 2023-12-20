@@ -76,8 +76,8 @@ module Types {
     "additional_context": {
       "questions": string,
       "entities": Array<any>,
-      "sources": Array<string>,
-      "data": any
+      "sources"?: Array<any>,
+      "data"?: Array<any>,
     }
   };
 
