@@ -99,7 +99,7 @@ class LLMPrompts {
     system += (agent.expert_at ? `You are also an expert at ` + agent.expert_at + `. ` : ``);
     system += `
     To be able to generate complete and accurate response to my question, your approach will be as follows:
-    1. think of 2 relevant follow-up deep-dive questions based on my question and the provided context.
+    1. think of 2 more deep-dive questions based on my question and the provided context.
     2. formulate a response to answer all the questions`;
     system += `
     Note that today's date is, ` + new Date().toDateString() + `.`;
@@ -120,7 +120,7 @@ class LLMPrompts {
       `;
     let task = `# Task`;
     task += `
-    Answer the following question using the provided context.
+    Based on the following question, formulate deep-dive questions and answer them using the provided context.
     `;
     task += `"` + input + `"
       `;
@@ -131,11 +131,11 @@ class LLMPrompts {
     `;
     let llmResponse: Types.LLMResponse = {
       "additional_context": {
-        "questions": '< concatenate my original question and the deep-dive questions >',
+        "questions": '< concatenated list of my question and all deep-dive questions >',
         "entities": [{ '< Entity Type >': ['< Array of Entity Values >'] }]
       },
-      "response": '< respond to the "questions" in ' + (agent.language || "English") + ' within ' + (agent.max_words ? (agent.max_words > 200 ? 300 : agent.max_words) : 300) + ' words. if there are missing values in the context, end with a follow-up question seeking those missing values >',
-      "status": '< say "FOLLOW-UP" if there are missing values in the context, else say "OK" >',
+      "response": '< using the provided context, answer all the questions in ' + (agent.language || "English") + ' in less than ' + (agent.max_words ? (agent.max_words > 200 ? 300 : agent.max_words) : 300) + ' words. if there are missing values in the context, end with a follow-up question seeking those missing values. >',
+      "status": '< say "FOLLOW-UP" if there are missing values in the context, else say "OK" >'
     };
     format += JSON.stringify(llmResponse);
     format += `
