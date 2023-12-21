@@ -130,12 +130,12 @@ class LLMPrompts {
     ***
     `;
     let llmResponse: Types.LLMResponse = {
+      "status": '< say "FOLLOW-UP" if there are missing values in the context, else say "OK" >',
       "additional_context": {
-        "questions": '< concatenated list of my question and all deep-dive questions >',
+        "questions": '< concatenate my question and deep-dive questions you generated >',
         "entities": [{ '< Entity Type >': ['< Array of Entity Values >'] }]
       },
-      "response": '< using the provided context, answer all the questions in ' + (agent.language || "English") + ' in less than ' + (agent.max_words ? (agent.max_words > 200 ? 300 : agent.max_words) : 300) + ' words. if there are missing values in the context, end with a follow-up question seeking those missing values. >',
-      "status": '< say "FOLLOW-UP" if there are missing values in the context, else say "OK" >'
+      "response": '< using the provided context, answer all the "questions" from "additional_context" in ' + (agent.language || "English") + '. Respond in less than ' + (agent.max_words ? (agent.max_words > 200 ? 300 : agent.max_words) : 300) + ' words. if "status" is determined to be "FOLLOW-UP", end your response with a follow-up question seeking additional information. >'
     };
     format += JSON.stringify(llmResponse);
     format += `
