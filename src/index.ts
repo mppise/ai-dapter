@@ -10,8 +10,8 @@ class AIDapter {
   private llm: Types.LLMModelConfig = {
     "app_name": "",
     "provider": "OpenAI",
-    "model_name": "gpt-3.5-turbo-16k",
-    "endpoint": "https://api.openai.com/v1/chat/completions",
+    "model_name": "",
+    "endpoint": "",
     "authentication": {
       "api_key": "",
       "org_id": ""
@@ -27,8 +27,17 @@ class AIDapter {
   constructor(llmConfig: Types.LLMModelConfig) {
     this.llm.app_name = llmConfig.app_name || this.llm.app_name;
     this.llm.provider = llmConfig.provider || this.llm.provider;
-    this.llm.model_name = llmConfig.model_name || this.llm.model_name;
-    this.llm.endpoint = llmConfig.endpoint || this.llm.endpoint;
+    if (this.llm.provider == "OpenAI") {
+      this.llm.model_name = llmConfig.model_name || "gpt-3.5-turbo-16k";
+      this.llm.endpoint = llmConfig.endpoint || "https://api.openai.com/v1/chat/completions";
+    }
+    else if (this.llm.provider == "GoogleAI") {
+      this.llm.model_name = llmConfig.model_name || "gemini-pro";
+      this.llm.endpoint = llmConfig.endpoint || "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
+    }
+    // --
+    //  .. add more providers here ...
+    // -- 
     this.llm.authentication.api_key = llmConfig.authentication.api_key || this.llm.authentication.api_key;
     this.llm.authentication.org_id = llmConfig.authentication.org_id || this.llm.authentication.org_id;
     this.llm.temperature = llmConfig.temperature || this.llm.temperature;
@@ -49,18 +58,29 @@ class AIDapter {
       let llmPrompts = new LLMPrompts();
       let prompt = llmPrompts.forRealtimeSources(input, apiRepository);
       let resp: any = {};
+      let llmResponse: any = {};
+      let payload: any = {};
       switch (this.llm.provider) {
+        // --
         case "OpenAI":
           this.llm['temperature'] = 0.6;
           resp = await this.utils.callOpenAI(this.llm, prompt);
+          llmResponse = resp.data.choices[0].message.content;
           this.utils.trackUsage(this.llm.app_name, 'openai_calls', 1, this.llm.telemetry == true);
+          break;
+        // --
+        case "GoogleAI":
+          this.llm['temperature'] = 0.6;
+          resp = await this.utils.callGoogleAI(this.llm, prompt);
+          llmResponse = resp.data.candidates[0].content.parts[0].text;
+          this.utils.trackUsage(this.llm.app_name, 'googleai_calls', 1, this.llm.telemetry == true);
           break;
         // --
         //  .. add more providers here ...
         // -- 
       };
-      let llmResponse = resp.data.choices[0].message.content;
-      let payload = JSON.parse(llmResponse.substring(llmResponse.indexOf('{'), llmResponse.lastIndexOf('}') + 1)); // only select JSON object
+      payload = JSON.parse(llmResponse.substring(llmResponse.indexOf('{'), llmResponse.lastIndexOf('}') + 1)); // only select JSON object
+      payload['provider'] = this.llm.provider;
       if (!payload['api_endpoints'])
         payload['api_endpoints'] = [];
       payload.api_endpoints.forEach((api_endpoint: any, i: number) => {
@@ -82,7 +102,6 @@ class AIDapter {
             api_endpoint['status'] = "OK";
         }
       });
-      payload['tokens'] = resp.data.usage;
       payload['runtime'] = Math.round((new Date().getTime() - runtimeStart) / 1000) + " seconds"
       this.utils.log("I", payload.api_endpoints.length + " APIs identified");
       this.utils.trackUsage(this.llm.app_name, 'apis_identified', payload.api_endpoints.length, this.llm.telemetry == true);
@@ -148,7 +167,7 @@ class AIDapter {
                   this.utils.trackUsage(this.llm.app_name, 'api_calls:failed', 1, this.llm.telemetry == true);
                   resolve({
                     "api_results": [],
-                    "tokens": payload.tokens,
+                    "provider": this.llm.provider,
                     "runtime": Math.round((new Date().getTime() - runtimeStart) / 1000) + " seconds"
                   });
                 });
@@ -168,7 +187,7 @@ class AIDapter {
               clearInterval(intvl);
               resolve({
                 "api_results": apiResults,
-                "tokens": payload.tokens,
+                "provider": this.llm.provider,
                 "runtime": Math.round((new Date().getTime() - runtimeStart) / 1000) + " seconds"
               });
             }
@@ -179,11 +198,7 @@ class AIDapter {
           this.utils.log("E", "Getting realtime sources failed");
           resolve({
             "api_results": [],
-            "tokens": {
-              "prompt_tokens": 0,
-              "completion_tokens": 0,
-              "total_tokens": 0
-            },
+            "provider": this.llm.provider,
             "runtime": Math.round((new Date().getTime() - runtimeStart) / 1000) + " seconds"
           });
         });
@@ -210,20 +225,30 @@ class AIDapter {
                 options.dataConfig?.additional_context.splice(0, options.dataConfig?.additional_context.length - maxContext); // Limit context results
                 options.dataConfig?.additional_context.forEach((context: any, i) => {
                   if (Object.keys(context).length > 0) {
-                    if (context.question)
-                      question.push(context.question);
+                    if (context.questions)
+                      question.push(context.questions);
                   }
                 });
               }
             }
             question.push(input);
             let llmPrompts = new LLMPrompts();
-            let prompt = llmPrompts.forResponseWithData(question.join(". "), realtimeData.api_results, options?.agentConfig);
+            let prompt = llmPrompts.forResponseWithData(question.join(" "), realtimeData.api_results, options?.agentConfig);
             let resp: any = {};
+            let llmResponse: any = {};
+            let payload: any = {};
             switch (this.llm.provider) {
+              // --
               case "OpenAI":
                 resp = await this.utils.callOpenAI(this.llm, prompt);
+                llmResponse = resp.data.choices[0].message.content;
                 this.utils.trackUsage(this.llm.app_name, 'openai_calls', 1, this.llm.telemetry == true);
+                break;
+              // --
+              case "GoogleAI":
+                resp = await this.utils.callGoogleAI(this.llm, prompt);
+                llmResponse = resp.data.candidates[0].content.parts[0].text;
+                this.utils.trackUsage(this.llm.app_name, 'googleai_calls', 1, this.llm.telemetry == true);
                 break;
               // --
               //  .. add more providers here ...
@@ -231,11 +256,11 @@ class AIDapter {
             };
             if (resp.status == 200) {
               this.utils.log("I", "Response OK");
-              let payload = (resp.data.choices[0].message.content.indexOf('{') >= 0 && resp.data.choices[0].message.content.lastIndexOf('}') > 0) ?
-                JSON.parse(resp.data.choices[0].message.content.substring(resp.data.choices[0].message.content.indexOf('{'), resp.data.choices[0].message.content.lastIndexOf('}') + 1))
+              payload = (llmResponse.indexOf('{') >= 0 && llmResponse.lastIndexOf('}') > 0) ?
+                JSON.parse(llmResponse.substring(llmResponse.indexOf('{'), llmResponse.lastIndexOf('}') + 1))
                 :
                 {
-                  "response": resp.data.choices[0].message.content,
+                  "response": llmResponse,
                   "status": "OK",
                   "additional_context": {
                     "entities": [],
@@ -253,13 +278,7 @@ class AIDapter {
                 "ai_response": payload.response,
                 "ai_status": payload.status,
                 "ai_context": payload.additional_context,
-                "tokens": {
-                  "api_identification": realtimeData.tokens,
-                  "llm_response": resp.data.usage,
-                  "prompt_tokens": realtimeData.tokens['prompt_tokens'] + resp.data.usage['prompt_tokens'],
-                  "completion_tokens": realtimeData.tokens['completion_tokens'] + resp.data.usage['completion_tokens'],
-                  "total_tokens": realtimeData.tokens['total_tokens'] + resp.data.usage['total_tokens']
-                },
+                "provider": this.llm.provider,
                 "runtime": Math.round((new Date().getTime() - runtimeStart) / 1000) + " seconds"
               });
             }
@@ -282,13 +301,7 @@ class AIDapter {
                   "questions": input,
                   "data": []
                 },
-                "tokens": {
-                  "api_identification": realtimeData.tokens,
-                  "llm_response": resp.data.usage,
-                  "prompt_tokens": realtimeData.tokens['prompt_tokens'] + resp.data.usage['prompt_tokens'],
-                  "completion_tokens": realtimeData.tokens['completion_tokens'] + resp.data.usage['completion_tokens'],
-                  "total_tokens": realtimeData.tokens['total_tokens'] + resp.data.usage['total_tokens']
-                },
+                "provider": this.llm.provider,
                 "runtime": Math.round((new Date().getTime() - runtimeStart) / 1000) + " seconds"
               });
             }
@@ -312,17 +325,7 @@ class AIDapter {
                 "questions": input,
                 "data": []
               },
-              "tokens": {
-                "api_identification": realtimeData.tokens,
-                "llm_response": {
-                  "prompt_tokens": 0,
-                  "completion_tokens": 0,
-                  "total_tokens": 0
-                },
-                "prompt_tokens": realtimeData.tokens['prompt_tokens'],
-                "completion_tokens": realtimeData.tokens['completion_tokens'],
-                "total_tokens": realtimeData.tokens['total_tokens']
-              },
+              "provider": this.llm.provider,
               "runtime": Math.round((new Date().getTime() - runtimeStart) / 1000) + " seconds"
             });
           }

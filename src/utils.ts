@@ -100,6 +100,36 @@ class Utils {
     });
   };
 
+  // ---------------------------------------------------------------
+  // Call GoogleAI API using axios
+  async callGoogleAI(llmConfig: any, prompt: any) {
+    return axios({
+      "method": "POST",
+      "url": llmConfig.endpoint + "?key=" + llmConfig.authentication.api_key,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "data": {
+        "contents": [{
+          "parts": [{
+            "text": prompt.system
+          },
+          {
+            "text": prompt.context
+          },
+          {
+            "text": prompt.task
+          },
+          {
+            "text": prompt.format
+          }]
+        }],
+        "generationConfig": {
+          "temperature": llmConfig.temperature || 0.6
+        }
+      }
+    });
+  };
 
 }; // class
 

@@ -11,6 +11,7 @@ Listing major enhancements
 
 |**Release**|**Date**|**Key Features**|
 |:----------:|:----------:|----------|
+|2.0.0|Jan 05, 2024|Major update: Supports GoogleAI in addition to OpenAI.|
 |1.3.0|Dec 16, 2023|Improved prompts to utilize relevant data and generate relevant responses. Responses for all methods now provide runtime information.|
 |1.2.9|Nov 03, 2023|(1) Agent configuration can specify (optional) language key. When this is set, LLM always thinks and responds in specified language (irrespective of input language). _Note_: Translation quality may not be optimal in some cases, so thorough testing is strongly adviced. (2) Response from all-in-one method includes grounding data used by LLM to geenrate a response. This should improve reliability.|
 |1.2.8|Oct 26, 2023|Incorporated [deep-dive prompting technique](https://mangeshpise.medium.com/deep-dive-prompting-technique-to-improve-the-quality-of-llms-response-233f3728223e) to improve quality of response.|
@@ -104,8 +105,8 @@ List of supported parameters to initialize the setup.
 |----------|:----------:|----------|----------|
 |`app_name`|M|Short app name.|-|
 |`provider`|M|The provider of LLM Model. _Note_: Currently, only models provided directly by OpenAI are supported.|"OpenAI"|
-|`model_name`|M|Allows you to select any model released by the provider. We recommend using models that allow large token sizes, such as `gpt-3.5-turbo-16k`.|-|
-|`endpoint`|M|The endpoint from where the provider serves the LLM model. You may have to refer to provider-specific documentation. For example, the OpenAI chat completion model is served from the `https://api.openai.com/v1/chat/completions` endpoint.|-|
+|`model_name`|O|Allows you to select any model released by the provider. We recommend using models that allow large token sizes, such as `gpt-3.5-turbo-16k` or `gemini-pro`.|-|
+|`endpoint`|O|The endpoint from where the provider serves the LLM model. You may have to refer to provider-specific documentation. For example, the OpenAI chat completion model is served from the `https://api.openai.com/v1/chat/completions` endpoint and GoogleAI model is served from `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent`.|-|
 |`authentication`|M|Provide authentication details as specified by your provider. For example, since OpenAI requires an API Key and an Organization ID, those are provided under the `api_key` and `org_id` fields, as shown in the initialization example above.|-|
 |`telemetry`|O|Telemetry data collection. Default is true.| true/false |
 
@@ -181,7 +182,8 @@ Use this method if your objective is to obtain relevant API endpoints based on u
 |**Field**|**Purpose**|
 |----------|----------|
 |`api_endpoints[]`| array of all identified API endpoints.|
-|`tokens`|To track LLM tokens used.|
+|`provider`|Indicates which LLM provider was used.|
+|`runtime`|To track overall response time. Note that this will depend on LLM's API response time.|
 
 #### Example
 
@@ -190,12 +192,9 @@ Use this method if your objective is to obtain relevant API endpoints based on u
 import AIDapter from "ai-adapter";
 
 const ai = new AIDapter({
-  "provider": "OpenAI",
-  "model_name": "gpt-3.5-turbo-16k",
-  "endpoint": "https://api.openai.com/v1/chat/completions",
+  "provider": "GoogleAI",
   "authentication": {
-    "api_key": "<<Your API Key>>",
-    "org_id": "<<Your Org ID>>"
+    "api_key": "<<Your API Key>>"
   }
 });
 
@@ -235,28 +234,25 @@ ai.getRealtimeSources(input, apiRepository)
     {
       "api_endpoints": [
         {
-          "API": {
+          "api": {
             "method": "GET",
-            "url": "http://worldtimeapi.org/api/timezone/Asia/Kolkata",
+            "url": "https://worldtimeapi.org/api/timezone/Asia/Kolkata",
             "headers": {
               "Content-Type": "application/json"
             }
           },
           "placeholders": [
             {
-              "placeholder": "|area_location|",
+              "placeholder": "[area_location]",
               "determined": true
             }
           ],
           "status": "OK"
         }
       ],
-        "tokens": {
-        "prompt_tokens": 1974,
-          "completion_tokens": 98,
-            "total_tokens": 2072
-      }
-    } 
+      "provider": "GoogleAI",
+      "runtime": "2 seconds"
+    }
     */
   }).catch((err) => console.log(JSON.stringify(err, null, 4)));
 ```
@@ -289,7 +285,8 @@ Use this method if your objective is to obtain data from relevant API endpoints 
 |**Field**|**Purpose**|
 |----------|----------|
 |`api_results[]`|Array of responses from all API calls.|
-|`tokens`|To track LLM tokens used.|
+|`provider`|Indicates which LLM provider was used.|
+|`runtime`|To track overall response time. Note that this will depend on LLM's API response time.|
 
 #### Example
 
@@ -298,12 +295,9 @@ Use this method if your objective is to obtain data from relevant API endpoints 
 import AIDapter from "ai-adapter";
 
 const ai = new AIDapter({
-  "provider": "OpenAI",
-  "model_name": "gpt-3.5-turbo-16k",
-  "endpoint": "https://api.openai.com/v1/chat/completions",
+  "provider": "GoogleAI",
   "authentication": {
-    "api_key": "<<Your API Key>>",
-    "org_id": "<<Your Org ID>>"
+    "api_key": "<<Your API Key>>"
   }
 });
 
@@ -346,28 +340,28 @@ ai.getDataFromRealtimeSource(question, apiRepository, dataConfig)
     {
       "api_results": [
         {
-          "abbreviation": "IST",
-          "client_ip": "2600:1009:b154:a1ec:a46d:32f6:6495:4d6e",
-          "datetime": "2023-10-08T02:48:30.928315+05:30",
-          "day_of_week": 0,
-          "day_of_year": 281,
-          "DST": false,
-          "dst_from": null,
-          "dst_offset": 0,
-          "dst_until": null,
-          "raw_offset": 19800,
-          "timezone": "Asia/Kolkata",
-          "unixtime": 1696713510,
-          "utc_datetime": "2023-10-07T21:18:30.928315+00:00",
-          "utc_offset": "+05:30",
-          "week_number": 40
+          "api_sources": "worldtimeapi.org",
+          "data": {
+            "abbreviation": "IST",
+            "client_ip": "50.126.214.61",
+            "datetime": "2024-01-05T22:48:30.316887+05:30",
+            "day_of_week": 5,
+            "day_of_year": 5,
+            "dst": false,
+            "dst_from": null,
+            "dst_offset": 0,
+            "dst_until": null,
+            "raw_offset": 19800,
+            "timezone": "Asia/Kolkata",
+            "unixtime": 1704475110,
+            "utc_datetime": "2024-01-05T17:18:30.316887+00:00",
+            "utc_offset": "+05:30",
+            "week_number": 1
+          }
         }
       ],
-        "tokens": {
-        "prompt_tokens": 1980,
-          "completion_tokens": 98,
-            "total_tokens": 2078
-      }
+      "provider": "GoogleAI",
+      "runtime": "4 seconds"
     }
     */
   }).catch((err) => console.log(JSON.stringify(err, null, 4)));
@@ -405,7 +399,8 @@ Use this method if your objective is to obtain LLM responses based on user quest
 |`ai_response`|LLM generated response.|
 |`ai_status`|Helps determine if the response was based on the availability of all required data elements to make successful API calls. Possible values: OK, FOLLOW-UP, or INCOMPLETE|
 |`ai_context`|This contains a short response summary and a list of entities. The idea behind this field is for use cases involving follow-up conversations. The entire object can be passed as `additional_content` within the `dataConfig` options when follow-up questions are to be submitted.|
-|`tokens`|To track LLM tokens used.|
+|`provider`|Indicates which LLM provider was used.|
+|`runtime`|To track overall response time. Note that this will depend on LLM's API response time.|
 
 #### Example
 
@@ -414,12 +409,9 @@ Use this method if your objective is to obtain LLM responses based on user quest
 import AIDapter from "ai-adapter";
 
 const ai = new AIDapter({
-  "provider": "OpenAI",
-  "model_name": "gpt-3.5-turbo-16k",
-  "endpoint": "https://api.openai.com/v1/chat/completions",
+  "provider": "GoogleAI",
   "authentication": {
-    "api_key": "<<Your API Key>>",
-    "org_id": "<<Your Org ID>>"
+    "api_key": "<<Your API Key>>"
   }
 });
 
@@ -464,33 +456,37 @@ ai.getLLMResponseFromRealtimeSources(question, apiRepository, options)
     console.log(resp);
     /*
     {
-      "ai_response": "The current time in Mumbai is 08:55 AM on October 8, 2023.",
-        "ai_status": "OK",
-          "ai_context": {
-        "question": "\"what time is it in Mumbai?\"",
-          "response_summary": "The current time in Mumbai is 08:55 AM on October 8, 2023.",
-            "entities": {
-          "Location": [
-            "Mumbai"
-          ]
-        }
+      "ai_response": "In the vibrant city of Mumbai, where Bollywood dreams take flight and the aroma of street food fills the air, it's currently 22:50 on this fabulous Friday, the 5th of January, 2024. So, whether you're sipping chai at the Gateway of India or grooving to the beats in a local dance club, remember, time waits for no one, not even for the biggest Bollywood stars!",
+      "ai_status": "OK",
+      "ai_context": {
+        "questions": "what time is it in Mumbai? What is the current date in Mumbai?",
+        "entities": [],
+        "data": [
+          {
+            "abbreviation": "IST",
+            "client_ip": "50.126.214.61",
+            "datetime": "2024-01-05T22:50:51.261990+05:30",
+            "day_of_week": 5,
+            "day_of_year": 5,
+            "dst": false,
+            "dst_from": null,
+            "dst_offset": 0,
+            "dst_until": null,
+            "raw_offset": 19800,
+            "timezone": "Asia/Kolkata",
+            "unixtime": 1704475251,
+            "utc_datetime": "2024-01-05T17:20:51.261990+00:00",
+            "utc_offset": "+05:30",
+            "week_number": 1
+          }
+        ],
+        "sources": [
+          "worldtimeapi.org"
+        ]
       },
-      "tokens": {
-        "api_identification": {
-          "prompt_tokens": 2232,
-            "completion_tokens": 98,
-              "total_tokens": 2330
-        },
-        "llm_response": {
-          "prompt_tokens": 441,
-            "completion_tokens": 74,
-              "total_tokens": 515
-        },
-        "prompt_tokens": 2673,
-          "completion_tokens": 172,
-            "total_tokens": 2845
-      }
-    } 
+      "provider": "GoogleAI",
+      "runtime": "6 seconds"
+    }
     */
   }).catch((err) => console.log(JSON.stringify(err, null, 4)));
 ```
@@ -509,13 +505,32 @@ An example shows how the context can be passed to enable follow-up conversations
 
 // As shown in the previous example, ai_context contains the following information:
 // -----------------------------------------------------------------------------
-//  resp.ai_context = {
-//   "question": "What time is it in Mumbai?",
-//   "response_summary": "The current time in Mumbai is 08:55 AM on October 8, 2023.",
-//   "entities": {
-//      "Location": ["Mumbai"]
-//    }
-//   }
+//  resp.ai_context: {
+//   "questions": "what time is it in Mumbai? What is the current date in Mumbai?",
+//   "entities": [],
+//   "data": [
+//     {
+//       "abbreviation": "IST",
+//       "client_ip": "50.126.214.61",
+//       "datetime": "2024-01-05T22:50:51.261990+05:30",
+//       "day_of_week": 5,
+//       "day_of_year": 5,
+//       "dst": false,
+//       "dst_from": null,
+//       "dst_offset": 0,
+//       "dst_until": null,
+//       "raw_offset": 19800,
+//       "timezone": "Asia/Kolkata",
+//       "unixtime": 1704475251,
+//       "utc_datetime": "2024-01-05T17:20:51.261990+00:00",
+//       "utc_offset": "+05:30",
+//       "week_number": 1
+//     }
+//   ],
+//   "sources": [
+//     "worldtimeapi.org"
+//   ]
+// }
 // -----------------------------------------------------------------------------
 
 
@@ -538,29 +553,37 @@ ai.getLLMResponseFromRealtimeSources(question, apiRepository, options)
     console.log(resp);
     /*
     {
-      "ai_response": "The current timezone is Asia/Kolkata.",
+      "ai_response": "It's 11:02 PM in the Maximum City, better known as Mumbai, on this fine Friday, the 5th of January, 2024. The city of dreams is currently in the Indian Standard Time (IST) zone, which is 5 hours and 30 minutes ahead of Coordinated Universal Time (UTC). So, if you're planning to call your buddy in London, remember the time difference or you might end up waking them up in the middle of the night. On a lighter note, if you're ever lost in Mumbai, just ask for directions to CST - the city's iconic train station. It's like the Times Square of Mumbai, but with more trains and less Spider-Man. Enjoy your stay in Mumbai, the city that never sleeps, unless it's past midnight, of course!",
       "ai_status": "OK",
       "ai_context": {
-        "question": "Which timezone is it in?",
-        "response_summary": "The current timezone is Asia/Kolkata.",
-        "entities": { }
+        "questions": "what time is it in Mumbai? What is the current date in Mumbai? which timezone is it in? What is the local time in Mumbai?",
+        "entities": [],
+        "data": [
+          {
+            "abbreviation": "IST",
+            "client_ip": "50.126.214.61",
+            "datetime": "2024-01-05T23:02:39.506038+05:30",
+            "day_of_week": 5,
+            "day_of_year": 5,
+            "dst": false,
+            "dst_from": null,
+            "dst_offset": 0,
+            "dst_until": null,
+            "raw_offset": 19800,
+            "timezone": "Asia/Kolkata",
+            "unixtime": 1704475959,
+            "utc_datetime": "2024-01-05T17:32:39.506038+00:00",
+            "utc_offset": "+05:30",
+            "week_number": 1
+          }
+        ],
+        "sources": [
+          "worldtimeapi.org"
+        ]
       },
-      "tokens": {
-        "api_identification": {
-          "prompt_tokens": 2238,
-            "completion_tokens": 98,
-              "total_tokens": 2336
-        },
-        "llm_response": {
-          "prompt_tokens": 439,
-            "completion_tokens": 52,
-              "total_tokens": 491
-        },
-        "prompt_tokens": 2677,
-          "completion_tokens": 150,
-            "total_tokens": 2827
-      }
-    } 
+      "provider": "GoogleAI",
+      "runtime": "10 seconds"
+    }
     */
   }).catch((err) => console.log(JSON.stringify(err, null, 4)));
 ```
@@ -569,8 +592,17 @@ ai.getLLMResponseFromRealtimeSources(question, apiRepository, options)
 
 The reference to "it" is obtained from the `additional_context`.
 
-Thus, the method `getLLMResponseFromRealtimeSources()` is an **all-in-one method**, an actual black box that can accelerate AI-based application development experience.
+Thus, the method `getLLMResponseFromRealtimeSources()` is an **all-in-one method**, and an actual black box that can accelerate AI-based application development experience.
 
+#### Additional purpose of the additional context:
+
+To instill reliability and openness (a.k.a. trust) in applications built using Generative AI technologies, it is crucial to be able to do a couple of things listed below. `additional_context` provides components to build such trusted system.
+
+- Source of information / data.
+- Actual dataset that was used to generate contextual result.
+- Understand the actual question(s) being answered; especially relevant with [deep-dive prompting technique](https://mangeshpise.medium.com/deep-dive-prompting-technique-to-improve-the-quality-of-llms-response-233f3728223e) that aims to improve quality and completeness of response.
+- Improve ability to test / debug the system.
+- etc.
 
 ## 7. API Repository
 
@@ -592,6 +624,8 @@ The API repository must be a developer-provided asset because:
 ### 7.1. API Repository Structure
 
 As mentioned earlier, an API repository is an array of API endpoints and additional metadata. The structure comprises three parts, as shown in the example below.
+
+Note that the developer must provide an API repository (using this exact structure). We do not rely on standard APIs for various reasons, such as security & billing, concise repository payload, flexibility, etc.
 
 ```json
 [
