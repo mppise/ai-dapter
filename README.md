@@ -693,7 +693,7 @@ Type: Array
 
 ## 8. Current Limitations
 
-1. AI-Dapter currently does not support API calls that require OAuth-based authentication. Only direct API calls, such as those with API Keys or unsecured API, are supported.
+AI-Dapter currently does not support API calls that require OAuth-based authentication. Only direct API calls, such as those with API Keys or unsecured API, are supported.
 
 
 ## 9. About the Developer
