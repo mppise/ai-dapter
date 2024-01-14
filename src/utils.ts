@@ -49,7 +49,7 @@ class Utils {
       this.mixpanel.people.set_once(app_name, { $name: app_name, $distinct_id: app_name });
     else
       this.log("W", "Telemetry is turned off");
-  }
+  };
   trackEvent(app_name: string, event: string, payload: any, telemetry: boolean) {
     if (telemetry) {
       payload['distinct_id'] = app_name;
@@ -57,17 +57,17 @@ class Utils {
     }
     else
       this.log("W", "Telemetry is turned off");
-  }
+  };
   trackUsage(app_name: string, metric: string, increment: number, telemetry: boolean) {
     if (telemetry)
       this.mixpanel.people.increment(app_name, metric, increment);
     else
       this.log("W", "Telemetry is turned off");
-  }
+  };
 
   // ---------------------------------------------------------------
   // Call API using axios
-  callAPI(method: string, url: string, headers: object, data?: object) {
+  callAPI(method: string, url: string, headers: any, data?: any) {
     type AxiosObj = Record<string, any>
     let axiosObj: AxiosObj = {};
     axiosObj.method = method;
@@ -76,6 +76,28 @@ class Utils {
     if (data)
       axiosObj.data = data;
     return axios(axiosObj);
+  };
+
+  reformatInput(dataConfig: any, originalInput: string) {
+    let entities: Array<any> = [];
+    let questions: Array<any> = [];
+    if (dataConfig?.additional_context) {
+      let maxContext = (dataConfig?.max_contexts && dataConfig?.max_contexts > 0) ? (dataConfig?.max_contexts > 2 ? 2 : dataConfig?.max_contexts) : 2;
+      dataConfig?.additional_context.splice(0, dataConfig?.additional_context.length - maxContext); // Limit context results
+      dataConfig?.additional_context.forEach((context: any) => {
+        if (Object.keys(context).length > 0) {
+          if (context.questions)
+            questions.push(context.questions);
+          if (context.entities)
+            entities.push(context.entities);
+        }
+      });
+    }
+    questions.push(originalInput);
+    let updatedInput = questions.join(" ");
+    if (entities.length)
+      updatedInput += " (Consider: " + entities.join(' ') + ")";
+    return updatedInput;
   };
 
   // ---------------------------------------------------------------
