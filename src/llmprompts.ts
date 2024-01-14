@@ -145,7 +145,7 @@ Respond in a valid JSON format using the following structure and instructions to
         "questions": '< concatenate my question and deep-dive questions you generated >',
         "entities": ['< identify all Named Entities from questions and context >']
       },
-      "response": '< using the provided context, answer all the "questions" in ' + (agent.language || "English") + '. If "status" is determined to be "FOLLOW-UP", end your response with a relevant follow-up question seeking missing information. ' + (agent.max_words ? ('Respond in less than ' + (agent.max_words > 300 ? '300' : agent.max_words) + ' words. ') : 'Keep your response brief and to the point. ') + '> '
+      "response": '< using the provided context, answer all the "questions"' + (agent.language ? " in " + agent.language + ". " : ". ") + 'If "status" is determined to be "FOLLOW-UP", end your response with a relevant follow-up question seeking missing information. ' + (agent.max_words ? ('Respond in less than ' + (agent.max_words > 300 ? '300' : agent.max_words) + ' words. ') : 'Keep your response brief and to the point. ') + '> '
     };
     format += JSON.stringify(llmResponse);
     format += `
@@ -158,7 +158,7 @@ Note: All JSON fields are mandatory and must be present in your response.
       "format": format,
       "task": task
     };
-    this.utils.log("I", "Prompt (for response)", system + context + task + format);
+    // this.utils.log("I", "Prompt (for response)", system + context + task + format);
     return prompt;
   };
 
