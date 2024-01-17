@@ -63,18 +63,18 @@ class AIDapter {
       switch (this.llm.provider) {
         // --
         case "OpenAI":
-          this.llm['temperature'] = 0.6;
+          this.llm['temperature'] = 0.33;
           resp = await this.utils.callOpenAI(this.llm, prompt);
           // this.utils.log("I", "OpenAI response received", resp.data);
-          llmResponse = resp.data.choices[0].message.content;
+          llmResponse = resp.data.choices ? resp.data.choices[0].message.content : {};
           this.utils.trackUsage(this.llm.app_name, 'openai_calls', 1, this.llm.telemetry == true);
           break;
         // --
         case "GoogleAI":
-          this.llm['temperature'] = 0.6;
+          this.llm['temperature'] = 0.33;
           resp = await this.utils.callGoogleAI(this.llm, prompt);
           // this.utils.log("I", "GoogleAI response received", resp.data);
-          llmResponse = resp.data.candidates[0].content.parts[0].text;
+          llmResponse = resp.data.candidates ? resp.data.candidates[0].content.parts[0].text : {};
           this.utils.trackUsage(this.llm.app_name, 'googleai_calls', 1, this.llm.telemetry == true);
           break;
         // --
@@ -204,14 +204,28 @@ class AIDapter {
               case "OpenAI":
                 resp = await this.utils.callOpenAI(this.llm, prompt);
                 // this.utils.log("I", "OpenAI response received", resp.data);
-                llmResponse = resp.data.choices[0].message.content;
+                llmResponse = resp.data.choices ? resp.data.choices[0].message.content : {
+                  "response": "Sorry! Something went wrong that hampered my ablity to respond to your question. Can you rephrase your question and try again?",
+                  "status": "NOT-OK",
+                  "additional_context": {
+                    "entities": [],
+                    "questions": input
+                  }
+                };
                 this.utils.trackUsage(this.llm.app_name, 'openai_calls', 1, this.llm.telemetry == true);
                 break;
               // --
               case "GoogleAI":
                 resp = await this.utils.callGoogleAI(this.llm, prompt);
                 // this.utils.log("I", "GoogleAI response received", resp.data);
-                llmResponse = resp.data.candidates[0].content.parts[0].text;
+                llmResponse = resp.data.candidates ? resp.data.candidates[0].content.parts[0].text : {
+                  "response": "Sorry! Something went wrong that hampered my ablity to respond to your question. Can you rephrase your question and try again?",
+                  "status": "NOT-OK",
+                  "additional_context": {
+                    "entities": [],
+                    "questions": input
+                  }
+                };
                 this.utils.trackUsage(this.llm.app_name, 'googleai_calls', 1, this.llm.telemetry == true);
                 break;
               // --

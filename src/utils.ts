@@ -117,7 +117,7 @@ class Utils {
           { "role": "system", "content": prompt.system },
           { "role": "user", "content": prompt.context + prompt.task + prompt.format }
         ],
-        "temperature": llmConfig.temperature || 0.6
+        "temperature": llmConfig.temperature || 0.82
       }
     });
   };
@@ -147,8 +147,26 @@ class Utils {
           }]
         }],
         "generationConfig": {
-          "temperature": llmConfig.temperature || 0.6
-        }
+          "temperature": llmConfig.temperature || 0.82
+        },
+        "safety_settings": [
+          {
+            "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+            "threshold": "BLOCK_ONLY_HIGH",
+          },
+          {
+            "category": "HARM_CATEGORY_HATE_SPEECH",
+            "threshold": "BLOCK_ONLY_HIGH",
+          },
+          {
+            "category": "HARM_CATEGORY_HARASSMENT",
+            "threshold": "BLOCK_ONLY_HIGH",
+          },
+          {
+            "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+            "threshold": "BLOCK_ONLY_HIGH",
+          }
+        ]
       }
     });
   };
