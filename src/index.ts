@@ -33,7 +33,7 @@ class AIDapter {
     }
     else if (this.llm.provider == "GoogleAI") {
       this.llm.model_name = llmConfig.model_name || "gemini-pro";
-      this.llm.endpoint = llmConfig.endpoint || "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
+      this.llm.endpoint = llmConfig.endpoint || "https://generativelanguage.googleapis.com/v1/models/gemini-1.0-pro:generateContent";
     }
     // --
     //  .. add more providers here ...
