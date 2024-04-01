@@ -1,6 +1,6 @@
 {
   "name": "ai-dapter",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "Adapter to connect AI LLM with realtime grounding sources and data",
   "main": "dist/index.js",
   "scripts": {
