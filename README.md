@@ -105,8 +105,8 @@ List of supported parameters to initialize the setup.
 |----------|:----------:|----------|----------|
 |`app_name`|M|Short app name.|-|
 |`provider`|M|The provider of LLM Model. _Note_: Currently, only models provided directly by OpenAI are supported.|"OpenAI"|
-|`model_name`|O|Allows you to select any model released by the provider. We recommend using models that allow large token sizes, such as `gpt-3.5-turbo-16k` or `gemini-pro`.|-|
-|`endpoint`|O|The endpoint from where the provider serves the LLM model. You may have to refer to provider-specific documentation. For example, the OpenAI chat completion model is served from the `https://api.openai.com/v1/chat/completions` endpoint and GoogleAI model is served from `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent`.|-|
+|`model_name`|O|Allows you to select any model released by the provider. We recommend using models that allow large token sizes, such as `gpt-3.5-turbo-16k` or `gemini-pro` or `claude-3-haiku-20240307`.|-|
+|`endpoint`|O|The endpoint from where the provider serves the LLM model. You may have to refer to provider-specific documentation. For example, the OpenAI chat completion model is served from the `https://api.openai.com/v1/chat/completions` endpoint, GoogleAI model is served from `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent` and ClaudeAI model is served from `https://api.anthropic.com/v1/messages`.|-|
 |`authentication`|M|Provide authentication details as specified by your provider. For example, since OpenAI requires an API Key and an Organization ID, those are provided under the `api_key` and `org_id` fields, as shown in the initialization example above.|-|
 |`telemetry`|O|Telemetry data collection. Default is true.| true/false |
 

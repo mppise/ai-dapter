@@ -35,6 +35,10 @@ class AIDapter {
       this.llm.model_name = llmConfig.model_name || "gemini-pro";
       this.llm.endpoint = llmConfig.endpoint || "https://generativelanguage.googleapis.com/v1/models/gemini-1.0-pro:generateContent";
     }
+    else if (this.llm.provider == "ClaudeAI") {
+      this.llm.model_name = llmConfig.model_name || "claude-3-haiku-20240307";
+      this.llm.endpoint = llmConfig.endpoint || "https://api.anthropic.com/v1/messages";
+    }
     // --
     //  .. add more providers here ...
     // -- 
@@ -76,6 +80,14 @@ class AIDapter {
           // this.utils.log("I", "GoogleAI response received", resp.data);
           llmResponse = resp.data.candidates ? resp.data.candidates[0].content.parts[0].text : {};
           this.utils.trackUsage(this.llm.app_name, 'googleai_calls', 1, this.llm.telemetry == true);
+          break;
+        // --
+        case "ClaudeAI":
+          this.llm['temperature'] = 0.33;
+          resp = await this.utils.callClaudeAI(this.llm, prompt);
+          // this.utils.log("I", "ClaudeAI response received", resp.data);
+          llmResponse = resp.data.content ? resp.data.content[0].text : {};
+          this.utils.trackUsage(this.llm.app_name, 'claudeai_calls', 1, this.llm.telemetry == true);
           break;
         // --
         //  .. add more providers here ...
@@ -227,6 +239,20 @@ class AIDapter {
                   }
                 };
                 this.utils.trackUsage(this.llm.app_name, 'googleai_calls', 1, this.llm.telemetry == true);
+                break;
+              // --
+              case "ClaudeAI":
+                resp = await this.utils.callClaudeAI(this.llm, prompt);
+                // this.utils.log("I", "ClaudeAI response received", resp.data);
+                llmResponse = resp.data.content ? resp.data.content[0].text : {
+                  "response": "Sorry! Something went wrong that hampered my ablity to respond to your question. Can you rephrase your question and try again?",
+                  "status": "NOT-OK",
+                  "additional_context": {
+                    "entities": [],
+                    "questions": input
+                  }
+                };
+                this.utils.trackUsage(this.llm.app_name, 'claudeai_calls', 1, this.llm.telemetry == true);
                 break;
               // --
               //  .. add more providers here ...

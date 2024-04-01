@@ -171,6 +171,29 @@ class Utils {
     });
   };
 
+  // ---------------------------------------------------------------
+  // Call ClaudeAI API using axios
+  async callClaudeAI(llmConfig: any, prompt: any) {
+    return axios({
+      "method": "POST",
+      "url": llmConfig.endpoint,
+      "headers": {
+        "Content-Type": "application/json",
+        "X-API-Key": llmConfig.authentication.api_key,
+        "anthropic-version": "2023-06-01"
+      },
+      "data": {
+        "model": llmConfig.model_name,
+        "max_tokens": 4096,
+        "system": prompt.system,
+        "messages": [
+          { "role": "user", "content": prompt.context + prompt.task + prompt.format }
+        ],
+        "temperature": llmConfig.temperature || 0.82
+      }
+    });
+  };
+
 }; // class
 
 export = Utils;

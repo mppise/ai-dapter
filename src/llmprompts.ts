@@ -145,7 +145,7 @@ Respond in a valid JSON format using the following structure and instructions to
         "questions": '< concatenate my question and deep-dive questions you generated >',
         "entities": ['< identify all Named Entities from questions and context >']
       },
-      "response": '< ' + (agent.language ? "first, " : "") + 'using the provided context answer all the "questions"' + (agent.language ? ", then translate in " + agent.language + ". " : ". ") + 'If "status" is determined to be "FOLLOW-UP", end your response with a relevant follow-up question seeking missing information. ' + (agent.max_words ? ('Respond in less than ' + (agent.max_words > 300 ? '300' : agent.max_words) + ' words. ') : 'Keep your response brief and to the point. ') + '> '
+      "response": '< ' + (agent.language ? "first, " : "") + 'using the provided context answer all the "questions"' + (agent.language ? ", then translate in " + agent.language + ". " : ". ") + 'If "status" is determined to be "FOLLOW-UP", end your response with a relevant follow-up question seeking missing information. ' + (agent.max_words ? ('Respond in less than ' + (agent.max_words > 300 ? '300' : agent.max_words) + ' words. ') : 'Keep your response brief and to the point. ') + 'Newline characters must be represented as "\n". >'
     };
     format += JSON.stringify(llmResponse);
     format += `
