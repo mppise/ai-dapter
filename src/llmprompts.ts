@@ -61,7 +61,8 @@ Answer the following question using only the provided context.
         "api": {
           "method": '< copy from identified API endpoint >',
           "url": '< generate from identified API endpoint after replacing placeholders with appropriate values >',
-          "headers": '< copy from identified API endpoint >'
+          "headers": '< copy from identified API endpoint >',
+          "data": '< copy from identified API endpoint only if available, else ignore this key-value pair >'
         },
         "placeholders": [
           {
