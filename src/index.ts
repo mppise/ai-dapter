@@ -32,7 +32,7 @@ class AIDapter {
       this.llm.endpoint = llmConfig.endpoint || "https://api.openai.com/v1/chat/completions";
     }
     else if (this.llm.provider == "GoogleAI") {
-      this.llm.model_name = llmConfig.model_name || "gemini-pro";
+      this.llm.model_name = llmConfig.model_name || "gemini-1.0-pro";
       this.llm.endpoint = llmConfig.endpoint || "https://generativelanguage.googleapis.com/v1/models/gemini-1.0-pro:generateContent";
     }
     else if (this.llm.provider == "ClaudeAI") {
@@ -156,7 +156,7 @@ class AIDapter {
                   if (apiResults.length == payload.api_endpoints.length)
                     inprogress = false;
                 }).catch((err: any) => {
-                  this.utils.log("E", api_endpoint.api.url.split('//')[1].split('/')[0], err);
+                  this.utils.log("E", api_endpoint.api.url.split('//')[1].split('/')[0], err.data);
                   this.utils.trackUsage(this.llm.app_name, 'api_calls:failed', 1, this.llm.telemetry == true);
                   apiResults.push({ "api_sources": api_endpoint.api.url.split('//')[1].split('/')[0], "data": {} });
                   if (apiResults.length == payload.api_endpoints.length)
