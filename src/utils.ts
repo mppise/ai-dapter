@@ -115,7 +115,11 @@ class Utils {
         "model": llmConfig.model_name,
         "messages": [
           { "role": "system", "content": prompt.system },
-          { "role": "user", "content": prompt.context + prompt.task + prompt.format }
+          {
+            "role": "user", "content": [
+              { "type": "text", "text": prompt.context + prompt.task + prompt.format }
+            ]
+          }
         ],
         "temperature": llmConfig.temperature || 0.82
       }
@@ -187,7 +191,11 @@ class Utils {
         "max_tokens": 4096,
         "system": prompt.system,
         "messages": [
-          { "role": "user", "content": prompt.context + prompt.task + prompt.format }
+          {
+            "role": "user", "content": [
+              { "type": "text", "text": prompt.context + prompt.task + prompt.format }
+            ]
+          }
         ],
         "temperature": llmConfig.temperature || 0.82
       }
