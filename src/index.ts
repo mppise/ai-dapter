@@ -28,12 +28,12 @@ class AIDapter {
     this.llm.app_name = llmConfig.app_name || this.llm.app_name;
     this.llm.provider = llmConfig.provider || this.llm.provider;
     if (this.llm.provider == "OpenAI") {
-      this.llm.model_name = llmConfig.model_name || "gpt-3.5-turbo-16k";
+      this.llm.model_name = llmConfig.model_name || "gpt-3.5-turbo-0125";
       this.llm.endpoint = llmConfig.endpoint || "https://api.openai.com/v1/chat/completions";
     }
     else if (this.llm.provider == "GoogleAI") {
-      this.llm.model_name = llmConfig.model_name || "gemini-1.0-pro";
-      this.llm.endpoint = llmConfig.endpoint || "https://generativelanguage.googleapis.com/v1/models/gemini-1.0-pro:generateContent";
+      this.llm.model_name = llmConfig.model_name || "gemini-pro";
+      this.llm.endpoint = llmConfig.endpoint || "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
     }
     else if (this.llm.provider == "ClaudeAI") {
       this.llm.model_name = llmConfig.model_name || "claude-3-haiku-20240307";
