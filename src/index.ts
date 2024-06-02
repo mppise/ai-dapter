@@ -156,7 +156,7 @@ class AIDapter {
                   if (apiResults.length == payload.api_endpoints.length)
                     inprogress = false;
                 }).catch((err: any) => {
-                  this.utils.log("E", api_endpoint.api.url.split('//')[1].split('/')[0], err.data);
+                  this.utils.log("E", api_endpoint.api.url.split('//')[1].split('/')[0], err);
                   this.utils.trackUsage(this.llm.app_name, 'api_calls:failed', 1, this.llm.telemetry == true);
                   apiResults.push({ "api_sources": api_endpoint.api.url.split('//')[1].split('/')[0], "data": {} });
                   if (apiResults.length == payload.api_endpoints.length)
